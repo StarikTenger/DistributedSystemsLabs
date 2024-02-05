@@ -1,0 +1,23 @@
+//put the classpath righ
+export CLASSPATH=$CLASSPATH:<yourpath>/classes
+
+//launch rmiregistry on mandelbrot on port 6090
+rmiregistry 6090 &
+
+//launch the server
+java -Djava.rmi.server.hostname=localhost  -cp classes HelloServer 6090
+
+//launch the client
+java -cp classes/ HelloClient localhost 6090
+
+
+Commands:
+javac *.java - build
+
+rmiregistry 6090 & - run rmiregistry
+kill <name of PID> - make the 6090 port free
+lsof -i -c rmiregist -a  - the list of rmiregist processes
+
+java HelloServer 6090 - server
+
+java HelloClient localhost 6090 Un_beau_mot - client
