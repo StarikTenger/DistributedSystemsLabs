@@ -17,7 +17,6 @@ public class HelloClient {
 
 	Info_itfImpl itf = new Info_itfImpl (args[2]);
 	Info_itf itf_stub = (Info_itf) UnicastRemoteObject.exportObject(itf, 0);
-	registry.bind("Info_itf", itf_stub);
 
 	Hello h = (Hello) registry.lookup("HelloService");
 
