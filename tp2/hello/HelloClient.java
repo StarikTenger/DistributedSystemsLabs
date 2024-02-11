@@ -18,11 +18,21 @@ public class HelloClient {
 	Info_itfImpl itf = new Info_itfImpl (args[2]);
 	Info_itf itf_stub = (Info_itf) UnicastRemoteObject.exportObject(itf, 0);
 
+	AccountingImpl acc = new AccountingImpl();
+	Accounting_itf acc_stub = (Accounting_itf) UnicastRemoteObject.exportObject(acc, 0);
+
 	Hello h = (Hello) registry.lookup("HelloService");
+	Registry_itf r = (Registry_itf) registry.lookup("RegistryService");
+	Hello2 h2 = (Hello2) registry.lookup("Hello2Service");
 
 	// Remote method invocation
-	String res = h.sayHello(itf_stub);
-	System.out.println(res);
+	// String res = h.sayHello(itf_stub);
+	// System.out.println(res);
+
+	// Registration
+	r.register(acc_stub);
+	int my_id = acc.getId();
+	System.out.println("My id is " + String.valueOf(my_id));
 
 	} catch (Exception e)  {
 //		System.err.println("Error on client: " + e);

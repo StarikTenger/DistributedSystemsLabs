@@ -7,9 +7,17 @@ public class HelloServer {
 
   public static void  main(String [] args) {
 	  try {
-		  // Create a Hello remote object
+		// Create a Hello remote object
 	    HelloImpl h = new HelloImpl ("Hello world !");
 	    Hello h_stub = (Hello) UnicastRemoteObject.exportObject(h, 0);
+
+		// Registry remote object
+		RegistryImpl r = new RegistryImpl();
+		Registry_itf r_stub = (Registry_itf) UnicastRemoteObject.exportObject(r, 0);
+
+		// Hello2 remote object
+		Hello2Impl h2 = new Hello2Impl(r);
+		Hello2 h2_stub = (Hello2) UnicastRemoteObject.exportObject(h2, 0);
 
 	    // Register the remote object in RMI registry with a given identifier
 	    Registry registry = null;
@@ -17,7 +25,10 @@ public class HelloServer {
 		    registry= LocateRegistry.getRegistry(Integer.parseInt(args[0])); 
 	    else
 		    registry = LocateRegistry.getRegistry();
+
 	    registry.bind("HelloService", h_stub);
+	    registry.bind("RegistryService", r_stub);
+	    registry.bind("Hello2Service", h2_stub);
 
 	    System.out.println ("Server ready");
 
