@@ -34,6 +34,10 @@ public class HelloClient {
 	int my_id = acc.getId();
 	System.out.println("My id is " + String.valueOf(my_id));
 
+	for (int i = 0; i < 3; i++) {
+		h2.sayHello(acc_stub, my_id);
+	}
+
 	} catch (Exception e)  {
 //		System.err.println("Error on client: " + e);
 		e.printStackTrace();
