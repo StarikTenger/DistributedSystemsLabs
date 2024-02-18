@@ -32,8 +32,8 @@ public class ClientImpl implements Client_itf {
 
     @Override
     public void sendMessage(String s) throws RemoteException {
-        // Message m = new Message(id, s);
-        // chatHistory.sendMessage(clientList, m);
+        Message m = new Message(id, s);
+        chatHistory.sendMessage(clientList, m);
     }
 
     @Override

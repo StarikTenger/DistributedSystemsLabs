@@ -83,7 +83,8 @@ public class Client {
 			}
 
 			// Getting history
-			
+			client.chatHistory = new ChatHistory(server.getChat());
+			client.showHistory();
 			
 
 			Scanner scanner = new Scanner(System.in);
