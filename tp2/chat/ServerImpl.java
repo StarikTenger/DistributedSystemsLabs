@@ -39,13 +39,8 @@ public class ServerImpl implements Server_itf {
         }
 
         @Override
-        public void sendMessage(String s) throws RemoteException {
-			
-        }
-
-        @Override
-        public void resMessage(Message m) throws RemoteException {
-
+        public void sendMessage(Message m) throws RemoteException {
+			chatHistory.loadNewMessage(m);
         }
 
         @Override

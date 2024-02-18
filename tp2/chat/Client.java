@@ -17,7 +17,6 @@ import java.util.Scanner;
 
 public class Client {
     static Server_itf server;
-	static Integer id;
 	static ClientImpl client;
 
 	public static Optional<Integer> loadId(String filename) {
@@ -67,30 +66,29 @@ public class Client {
 			// Getting the id
 			Optional<Integer> id_opt = loadId(filename);
 			if (id_opt.isPresent()) {
-				id = id_opt.get();
+				client.id = id_opt.get();
 			} else {
-				id = server.genId();
-				saveId(id, filename);
+				client.id = server.genId();
+				saveId(client.id, filename);
 			}
-			System.out.println(id);
+			System.out.println(client.id);
 
 			// Connection
-			server.connect(id, itf_stub);
+			server.connect(client.id, itf_stub);
 			client.connected = server.getClientList();
 			for (Map.Entry<Integer, Client_itf> entry : client.connected.entrySet()) {
-				entry.getValue().connect(id, itf_stub);
+				entry.getValue().connect(client.id, itf_stub);
 				System.out.println(entry.getKey() + "/" + entry.getValue());
 			}
 
 			// Getting history
 			client.chatHistory = new ChatHistory(server.getChat());
-			client.showHistory();
+			client.chatHistory.showChatHistory();
 			
 
 			Scanner scanner = new Scanner(System.in);
 
 			while (true) {
-				System.out.print("Enter a message: ");
 				String message = scanner.nextLine();
 
 
@@ -114,7 +112,8 @@ public class Client {
         }
     }
 
-	private static void sendAll(String message) throws RemoteException {
+	private static void sendAll(String s) throws RemoteException {
+		Message message = new Message(client.id, s);
 		server.sendMessage(message);
         for (Map.Entry<Integer, Client_itf> entry : client.connected.entrySet()) {
 			entry.getValue().sendMessage(message);

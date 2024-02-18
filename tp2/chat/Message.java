@@ -1,9 +1,10 @@
 package chat;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Date;
 
-public class Message {
+public class Message implements Serializable  {
     Integer sender; // TODO: Client from ClientList
     String text;
     Date date;

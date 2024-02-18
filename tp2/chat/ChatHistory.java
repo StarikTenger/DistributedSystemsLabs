@@ -51,7 +51,7 @@ public class ChatHistory {
         if (list != null) {
             list.forEach((id, client) -> {
                 try {
-                    client.resMessage(m);
+                    client.sendMessage(m);
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }

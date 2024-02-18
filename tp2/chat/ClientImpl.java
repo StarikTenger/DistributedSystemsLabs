@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 public class ClientImpl implements Client_itf {
-    Integer id;
+    public Integer id;
     public ChatHistory chatHistory;
     ClientList clientList;
 	public HashMap<Integer, Client_itf> connected = new HashMap<>();
@@ -31,13 +31,7 @@ public class ClientImpl implements Client_itf {
     }
 
     @Override
-    public void sendMessage(String s) throws RemoteException {
-        Message m = new Message(id, s);
-        chatHistory.sendMessage(clientList, m);
-    }
-
-    @Override
-    public void resMessage(Message m) throws RemoteException {
+    public void sendMessage(Message m) throws RemoteException {
         chatHistory.loadNewMessage(m);
     }
 }
