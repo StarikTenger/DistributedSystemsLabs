@@ -7,4 +7,7 @@ public interface Server_itf extends Client_itf {
 	public HashMap<Integer, Client_itf> getClientList() throws RemoteException;
 	public LinkedList getChatHistory() throws RemoteException;
 	public boolean ping() throws RemoteException;
+
+	public HashMap<Integer, Client_itf> getClients() throws RemoteException;
+	public LinkedList<Message> getChat() throws RemoteException;
 }

@@ -2,12 +2,13 @@ package chat;
 
 import java.rmi.RemoteException;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 public class ClientImpl implements Client_itf {
-    String id;
+    Integer id;
     ChatHistory chatHistory;
     ClientList clientList;
-	private HashMap<Integer, Client_itf> connected = new HashMap<>();
+	public HashMap<Integer, Client_itf> connected = new HashMap<>();
 
 	@Override
     public void connect(Integer id, Client_itf itf) throws RemoteException {
@@ -17,6 +18,12 @@ public class ClientImpl implements Client_itf {
     @Override
     public void disconnect(Integer id) throws RemoteException {
 		connected.remove(id);
+	}
+	
+
+    @Override
+    public Integer getId() {
+        return id;
     }
 
     @Override

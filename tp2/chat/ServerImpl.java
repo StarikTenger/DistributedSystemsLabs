@@ -7,6 +7,9 @@ public class ServerImpl implements Server_itf {
 
 		private Set<Integer> knownIds = new HashSet<>();
 		private HashMap<Integer, Client_itf> connected = new HashMap<>();
+		private Integer count;
+        ChatHistory chatHistory;
+        ClientList clientList;
 		private int cur_id = 0;
 
         public void connect(Integer id, Client_itf itf) throws RemoteException {
@@ -16,6 +19,18 @@ public class ServerImpl implements Server_itf {
 			} else {
 				System.out.println("ERROR: Non-registered ID" + String.valueOf(id));
 			}
+		}
+
+
+        public ServerImpl() {
+                count = 0;
+                chatHistory = new ChatHistory();
+                clientList = new ClientList();
+        }
+
+        @Override
+        public Integer getId() {
+                return null;
         }
 
         @Override
@@ -55,4 +70,13 @@ public class ServerImpl implements Server_itf {
 		public boolean ping() throws RemoteException {
 			return true;
 		}
+        public HashMap<Integer, Client_itf> getClients() {
+                return clientList.getClients();
+        }
+
+        @Override
+        public LinkedList<Message> getChat() {
+                return chatHistory.getMessages();
+        }
+
 }

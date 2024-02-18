@@ -18,7 +18,7 @@ import java.util.Scanner;
 public class Client {
     static Server_itf server;
 	static Integer id;
-	static HashMap<Integer, Client_itf> clients;
+	static ClientImpl client;
 
 	public static Optional<Integer> loadId(String filename) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
@@ -61,8 +61,8 @@ public class Client {
 			Registry registry = LocateRegistry.getRegistry(host, port);
             server = (Server_itf) registry.lookup("ServerService");
 
-            ClientImpl itf = new ClientImpl ();
-			Client_itf itf_stub = (Client_itf) UnicastRemoteObject.exportObject(itf, 0);
+            client = new ClientImpl ();
+			Client_itf itf_stub = (Client_itf) UnicastRemoteObject.exportObject(client, 0);
 
 			// Getting the id
 			Optional<Integer> id_opt = loadId(filename);
@@ -76,13 +76,14 @@ public class Client {
 
 			// Connection
 			server.connect(id, itf_stub);
-			clients = server.getClientList();
-			for (Map.Entry<Integer, Client_itf> entry : clients.entrySet()) {
+			client.connected = server.getClientList();
+			for (Map.Entry<Integer, Client_itf> entry : client.connected.entrySet()) {
 				entry.getValue().connect(id, itf_stub);
 				System.out.println(entry.getKey() + "/" + entry.getValue());
 			}
 
-
+			// Getting history
+			
 			
 
 			Scanner scanner = new Scanner(System.in);
@@ -114,7 +115,7 @@ public class Client {
 
 	private static void sendAll(String message) throws RemoteException {
 		server.sendMessage(message);
-        for (Map.Entry<Integer, Client_itf> entry : clients.entrySet()) {
+        for (Map.Entry<Integer, Client_itf> entry : client.connected.entrySet()) {
 			entry.getValue().sendMessage(message);
 		}
     }
