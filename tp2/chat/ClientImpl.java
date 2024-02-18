@@ -1,6 +1,6 @@
 package chat;
 
-public class ClientItf implements Client_itf {
+public class ClientImpl implements Client_itf {
     String id;
     ChatHistory chatHistory;
     ClientList clientList;

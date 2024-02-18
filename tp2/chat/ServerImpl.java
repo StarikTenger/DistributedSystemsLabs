@@ -3,7 +3,7 @@ package chat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class ServerItf  implements Server_itf {
+public class ServerImpl  implements Server_itf {
 
         public void connect(Integer id, Client_itf itf) {
 

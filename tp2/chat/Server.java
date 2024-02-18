@@ -16,7 +16,7 @@ public class Server {
             else
                 registry = LocateRegistry.getRegistry();
 
-            Server_itf serv = new ServerItf();
+            Server_itf serv = new ServerImpl();
             Server_itf serv_stub = (Server_itf) UnicastRemoteObject.exportObject(serv, 0);
 
             registry.bind("ServerService", serv_stub);

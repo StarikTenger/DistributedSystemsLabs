@@ -11,7 +11,7 @@ public class Client {
         try {
             Registry registry = LocateRegistry.getRegistry(Integer.parseInt(args[0]));
             server = (Server_itf) registry.lookup("ServerService");
-            Client_itf cl = new ClientItf();
+            Client_itf cl = new ClientImpl();
             Server_itf serv_stub = (Server_itf) UnicastRemoteObject.exportObject(cl, 0);
             registry.bind("ClientService", serv_stub);
         } catch (Exception e) {
