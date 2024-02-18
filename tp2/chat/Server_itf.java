@@ -1,9 +1,9 @@
-package tp2.chat;
+package chat;
 import java.rmi.*;
 import java.util.*;
 
 public interface Server_itf extends Client_itf {
 	public int genId(); // New id for new user
-	public HashMap<Integer, Client_itf> getClientList();
-	public ChatHistory getChatHistory();
+	public ArrayList<Client> getClientList();
+	public LinkedList getChatHistory();
 }
