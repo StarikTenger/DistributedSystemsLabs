@@ -6,7 +6,7 @@ import java.util.LinkedList;
 
 public class ClientImpl implements Client_itf {
     Integer id;
-    ChatHistory chatHistory;
+    public ChatHistory chatHistory;
     ClientList clientList;
 	public HashMap<Integer, Client_itf> connected = new HashMap<>();
 
@@ -20,6 +20,10 @@ public class ClientImpl implements Client_itf {
 		connected.remove(id);
 	}
 	
+
+    public void showHistory() throws RemoteException {
+        chatHistory.showChatHistory();
+    }
 
     @Override
     public Integer getId() {

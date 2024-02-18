@@ -59,20 +59,21 @@ public class ServerImpl implements Server_itf {
         @Override
         public HashMap<Integer, Client_itf> getClientList() throws RemoteException {
             return connected;
+		}
+
+        public void showHistory() throws RemoteException {
+			System.out.println(chatHistory);
         }
 
         @Override
-        public LinkedList getChatHistory() throws RemoteException {
-            return null;
+        public HashMap<Integer, Client_itf> getClients() {
+            return connected;
         }
 
 		@Override
 		public boolean ping() throws RemoteException {
 			return true;
 		}
-        public HashMap<Integer, Client_itf> getClients() {
-                return clientList.getClients();
-        }
 
         @Override
         public LinkedList<Message> getChat() {
