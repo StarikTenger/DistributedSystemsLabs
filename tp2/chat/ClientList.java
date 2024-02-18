@@ -12,7 +12,7 @@ public class ClientList {
     }
 
     public void loadClientList(Server_itf s) {
-        clients = s.getClientList();
+        //clients = s.getClientList();
     }
 
     public HashMap<Integer, Client_itf> getClients() {

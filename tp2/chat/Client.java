@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -55,7 +56,7 @@ public class Client {
 
 			String host = args[0];
 			int port = Integer.parseInt(args[1]);
-			String filename = args[3];
+			String filename = args[2];
 
 			Registry registry = LocateRegistry.getRegistry(host, port);
             server = (Server_itf) registry.lookup("ServerService");
@@ -103,7 +104,7 @@ public class Client {
         }
     }
 
-	private static void sendAll(String message) {
+	private static void sendAll(String message) throws RemoteException {
         for (Map.Entry<Integer, Client_itf> entry : clients.entrySet()) {
 			entry.getValue().sendMessage(message);
 		}

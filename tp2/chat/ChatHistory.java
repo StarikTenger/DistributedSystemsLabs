@@ -10,7 +10,7 @@ public class ChatHistory {
     }
 
     public void loadChatHistory(Server_itf s) {
-        messages = s.getChatHistory();
+        //messages = s.getChatHistory();
     }
 
     public void loadNewMessage(Message m) {
@@ -24,7 +24,7 @@ public class ChatHistory {
 
     public void sendMessage(ClientList l, Message m) {
         l.getClients().forEach((id, client) -> {
-            client.resMessage(m);
+            //client.resMessage(m);
         });
         loadNewMessage(m);
     }
