@@ -1,7 +1,7 @@
 package chat;
 
 public class ClientImpl implements Client_itf {
-    String id;
+    Integer id;
     ChatHistory chatHistory;
     ClientList clientList;
 

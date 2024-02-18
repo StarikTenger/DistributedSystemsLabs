@@ -1,24 +1,25 @@
 package chat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class ClientList {
-    ArrayList<Client> clients;
+    HashMap<Integer, Client_itf> clients;
 
     public void ClientList() {
-        clients = new ArrayList();
+        clients = new HashMap<Integer, Client_itf>();
     }
 
     public void loadClientList(Server_itf s) {
         clients = s.getClientList();
     }
 
-    public ArrayList<Client> getClients() {
+    public HashMap<Integer, Client_itf> getClients() {
         return clients;
     }
 
-    public void addClientToList(Client c) {
-        clients.add(c);
+    public void addClientToList(ClientImpl c) {
+        clients.put(c.id, c);
     }
 }

@@ -37,7 +37,7 @@ public class ServerImpl  implements Server_itf {
         }
 
         @Override
-        public ArrayList<Client> getClientList() {
+        public HashMap<Integer, Client_itf> getClientList() {
             return null;
         }
 

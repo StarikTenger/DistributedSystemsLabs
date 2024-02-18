@@ -23,10 +23,9 @@ public class ChatHistory {
     }
 
     public void sendMessage(ClientList l, Message m) {
-        for (Client client: l.getClients()
-             ) {
+        l.getClients().forEach((id, client) -> {
             client.resMessage(m);
-        }
+        });
         loadNewMessage(m);
     }
 }
