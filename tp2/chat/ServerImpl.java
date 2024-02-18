@@ -50,4 +50,9 @@ public class ServerImpl implements Server_itf {
         public LinkedList getChatHistory() throws RemoteException {
             return null;
         }
+
+		@Override
+		public boolean ping() throws RemoteException {
+			return true;
+		}
 }

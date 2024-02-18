@@ -91,6 +91,12 @@ public class Client {
 				System.out.print("Enter a message: ");
 				String message = scanner.nextLine();
 
+
+				if(!serverAlive()) {
+					System.err.println("Server is offline");
+					return;
+				}
+
 				if (message.startsWith("#")) {
 					processCommand(message);
 				} else {
@@ -102,10 +108,12 @@ public class Client {
         } catch (Exception e) {
             System.err.println("Error on client: " + e) ;
             e.printStackTrace();
+			return;
         }
     }
 
 	private static void sendAll(String message) throws RemoteException {
+		server.sendMessage(message);
         for (Map.Entry<Integer, Client_itf> entry : clients.entrySet()) {
 			entry.getValue().sendMessage(message);
 		}
@@ -134,4 +142,12 @@ public class Client {
         System.out.println("#quit - Quit the program");
         System.out.println("#help - Display help information");
     }
+
+	private static boolean serverAlive() {
+		try {
+			return server.ping();
+		} catch (Exception e) {
+            return false;
+        }
+	}
 }

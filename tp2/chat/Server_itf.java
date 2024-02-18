@@ -6,4 +6,5 @@ public interface Server_itf extends Client_itf {
 	public int genId() throws RemoteException; // New id for new user
 	public HashMap<Integer, Client_itf> getClientList() throws RemoteException;
 	public LinkedList getChatHistory() throws RemoteException;
+	public boolean ping() throws RemoteException;
 }
