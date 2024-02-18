@@ -2,10 +2,11 @@ package chat;
 
 import java.util.*;
 
-public class ServerImpl  implements Server_itf {
+public class ServerImpl implements Server_itf {
 
 		private Set<Integer> knownIds = new HashSet<>();
 		private HashMap<Integer, Client_itf> connected = new HashMap<>();
+		private int cur_id = 0;
 
         public void connect(Integer id, Client_itf itf) {
 			if (knownIds.contains(id)) {
@@ -18,12 +19,12 @@ public class ServerImpl  implements Server_itf {
 
         @Override
         public void disconnect(Integer id) {
-			
+			connected.remove(id);
         }
 
         @Override
         public void sendMessage(String s) {
-
+			
         }
 
         @Override
@@ -33,12 +34,13 @@ public class ServerImpl  implements Server_itf {
 
         @Override
         public int genId() {
-            return 0;
+            cur_id++;
+			return cur_id;
         }
 
         @Override
         public HashMap<Integer, Client_itf> getClientList() {
-            return null;
+            return connected;
         }
 
         @Override
