@@ -42,6 +42,11 @@ public class ServerImpl  implements Server_itf {
         }
 
         @Override
+        public void showHistory() throws RemoteException {
+
+        }
+
+        @Override
         public HashMap<Integer, Client_itf> getClients() {
                 return clientList.getClients();
         }

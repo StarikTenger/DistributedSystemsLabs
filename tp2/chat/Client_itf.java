@@ -8,4 +8,5 @@ public interface Client_itf extends Remote {
 	public void disconnect(Integer id) throws RemoteException; // Remove id from table
 	public void sendMessage(String s) throws RemoteException; // Send message to this client
 	public void resMessage(Message m) throws RemoteException; // Send message to this client
+	void showHistory() throws RemoteException;
 }

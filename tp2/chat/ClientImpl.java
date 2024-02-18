@@ -6,7 +6,7 @@ import java.util.LinkedList;
 
 public class ClientImpl implements Client_itf {
     Integer id;
-    ChatHistory chatHistory;
+    public ChatHistory chatHistory;
     ClientList clientList;
 
     public ClientImpl( HashMap<Integer, Client_itf> c, LinkedList<Message> m) {
@@ -18,6 +18,10 @@ public class ClientImpl implements Client_itf {
     public void connect(Integer id, Client_itf itf, Server_itf server) throws RemoteException {
         chatHistory.loadChatHistory(server);
         clientList.loadClientList(server);
+    }
+
+    public void showHistory() throws RemoteException {
+        chatHistory.showChatHistory();
     }
 
     @Override

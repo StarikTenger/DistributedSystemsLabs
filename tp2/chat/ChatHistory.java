@@ -1,6 +1,7 @@
 package chat;
 
 import java.rmi.RemoteException;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class ChatHistory {
@@ -27,6 +28,14 @@ public class ChatHistory {
         }
     }
 
+    public void showChatHistory() {
+        System.out.println("Chat:");
+        // show all messages after loading
+        for (Message message: messages) {
+            showMessage(message);
+        }
+    }
+
     public void loadNewMessage(Message m) {
         messages.add(m);
         showMessage(messages.getLast());
@@ -38,13 +47,16 @@ public class ChatHistory {
 
     public void sendMessage(ClientList l, Message m) {
         System.out.println("Sending message...");
-        l.getClients().forEach((id, client) -> {
-            try {
-                client.resMessage(m);
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        HashMap<Integer, Client_itf> list = l.getClients();
+        if (list != null) {
+            list.forEach((id, client) -> {
+                try {
+                    client.resMessage(m);
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
         System.out.println("Add it to local history");
         loadNewMessage(m);
     }
