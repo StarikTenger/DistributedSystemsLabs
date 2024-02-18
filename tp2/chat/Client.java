@@ -11,10 +11,13 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
+
 
 public class Client {
     static Server_itf server;
 	static Integer id;
+	static HashMap<Integer, Client_itf> clients;
 
 	public static Optional<Integer> loadId(String filename) {
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
@@ -71,19 +74,62 @@ public class Client {
 
 			// Connection
 			server.connect(id, itf_stub);
-			HashMap<Integer, Client_itf> clients = server.getClientList();
+			clients = server.getClientList();
 			for (Map.Entry<Integer, Client_itf> entry : clients.entrySet()) {
 				entry.getValue().connect(id, itf_stub);
 				System.out.println(entry.getKey() + "/" + entry.getValue());
 			}
 
 
+			
 
+			Scanner scanner = new Scanner(System.in);
+
+			while (true) {
+				System.out.print("Enter a message: ");
+				String message = scanner.nextLine();
+
+				if (message.startsWith("#")) {
+					processCommand(message);
+				} else {
+					sendAll(message);
+				}
+			}
         
 
         } catch (Exception e) {
             System.err.println("Error on client: " + e) ;
             e.printStackTrace();
         }
+    }
+
+	private static void sendAll(String message) {
+        for (Map.Entry<Integer, Client_itf> entry : clients.entrySet()) {
+			entry.getValue().sendMessage(message);
+		}
+    }
+
+    private static void processCommand(String command) {
+        switch (command) {
+            case "#quit":
+                quit();
+                break;
+            case "#help":
+                printHelp();
+                break;
+            default:
+                System.out.println("Unknown command: " + command);
+        }
+    }
+
+    private static void quit() {
+        System.out.println("Quitting the program.");
+        System.exit(0);
+    }
+
+    private static void printHelp() {
+        System.out.println("Available commands:");
+        System.out.println("#quit - Quit the program");
+        System.out.println("#help - Display help information");
     }
 }

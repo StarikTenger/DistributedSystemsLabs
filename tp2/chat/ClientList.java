@@ -20,6 +20,6 @@ public class ClientList {
     }
 
     public void addClientToList(ClientImpl c) {
-        clients.put(c.id, c);
+        //clients.put(c.id, c);
     }
 }

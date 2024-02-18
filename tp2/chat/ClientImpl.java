@@ -1,13 +1,12 @@
 package chat;
 
 public class ClientImpl implements Client_itf {
-    Integer id;
+    String id;
     ChatHistory chatHistory;
     ClientList clientList;
 
-    public void connect(Integer id, Client_itf itf, Server_itf server) {
-        chatHistory.loadChatHistory(server);
-        clientList.loadClientList(server);
+	@Override
+    public void connect(Integer id, Client_itf itf) {
     }
 
     @Override
@@ -17,8 +16,8 @@ public class ClientImpl implements Client_itf {
 
     @Override
     public void sendMessage(String s) {
-        Message m = new Message(id, s);
-        chatHistory.sendMessage(clientList, m);
+        // Message m = new Message(id, s);
+        // chatHistory.sendMessage(clientList, m);
     }
 
     @Override
