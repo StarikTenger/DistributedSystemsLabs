@@ -1,6 +1,7 @@
 package chat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class ServerImpl  implements Server_itf {
@@ -30,7 +31,7 @@ public class ServerImpl  implements Server_itf {
         }
 
         @Override
-        public ArrayList<Client> getClientList() {
+        public HashMap<Integer, Client_itf> getClientList() {
             return null;
         }
 
