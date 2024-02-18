@@ -2,6 +2,7 @@ package chat;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Message implements Serializable  {
@@ -13,5 +14,10 @@ public class Message implements Serializable  {
         sender = s;
         text = t;
         date = new Date();
+    }
+    public Message(Integer s, String t, Date d) {
+        sender = s;
+        text = t;
+        date = d;
     }
 }
