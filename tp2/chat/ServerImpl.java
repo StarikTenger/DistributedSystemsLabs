@@ -1,13 +1,29 @@
 package chat;
 
-import java.util.ArrayList;
+import java.rmi.RemoteException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
 public class ServerImpl  implements Server_itf {
+        private Integer count;
+        ChatHistory chatHistory;
+        ClientList clientList;
 
-        public void connect(Integer id, Client_itf itf) {
 
+        public ServerImpl() {
+                count = 0;
+                chatHistory = new ChatHistory();
+                clientList = new ClientList();
+        }
+
+        @Override
+        public Integer getId() {
+                return null;
+        }
+
+        @Override
+        public void connect(Client_itf itf) throws RemoteException {
+                clientList.addClientToList(itf);
         }
 
         @Override
@@ -26,8 +42,18 @@ public class ServerImpl  implements Server_itf {
         }
 
         @Override
+        public HashMap<Integer, Client_itf> getClients() {
+                return clientList.getClients();
+        }
+
+        @Override
+        public LinkedList<Message> getChat() {
+                return chatHistory.getMessages();
+        }
+
+        @Override
         public int genId() {
-            return 0;
+            return count++;
         }
 
         @Override
@@ -35,8 +61,4 @@ public class ServerImpl  implements Server_itf {
             return null;
         }
 
-        @Override
-        public LinkedList getChatHistory() {
-            return null;
-        }
 }

@@ -1,16 +1,14 @@
 package chat;
 
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.rmi.*;
+import java.rmi.server.*;
+import java.rmi.registry.*;
 
 public class Server {
-    public static void  main(String [] args) {
+    public static void main(String [] args) {
         try {
             // Register the remote object in RMI registry with a given identifier
-            Registry registry = null;
+            Registry registry;
             if (args.length>0)
                 registry= LocateRegistry.getRegistry(Integer.parseInt(args[0]));
             else
@@ -18,7 +16,6 @@ public class Server {
 
             Server_itf serv = new ServerImpl();
             Server_itf serv_stub = (Server_itf) UnicastRemoteObject.exportObject(serv, 0);
-
             registry.bind("ServerService", serv_stub);
 
             System.out.println ("Server ready");
