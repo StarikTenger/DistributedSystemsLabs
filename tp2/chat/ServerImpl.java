@@ -36,6 +36,8 @@ public class ServerImpl implements Server_itf {
         @Override
         public int genId() throws RemoteException {
             cur_id++;
+			knownIds.add(cur_id);
+			System.out.println(cur_id);
 			return cur_id;
         }
 

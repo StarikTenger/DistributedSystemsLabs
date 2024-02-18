@@ -69,9 +69,10 @@ public class Client {
 			if (id_opt.isPresent()) {
 				id = id_opt.get();
 			} else {
-				server.genId();
+				id = server.genId();
 				saveId(id, filename);
 			}
+			System.out.println(id);
 
 			// Connection
 			server.connect(id, itf_stub);
