@@ -1,5 +1,9 @@
 package chat;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -11,6 +15,7 @@ public class ServerImpl implements Server_itf {
         ChatHistory chatHistory;
         ClientList clientList;
 		private int cur_id = 0;
+        private String filepath = "./history.txt";
 
         public void connect(Integer id, Client_itf itf) throws RemoteException {
 			if (knownIds.contains(id)) {
@@ -26,6 +31,35 @@ public class ServerImpl implements Server_itf {
                 count = 0;
                 chatHistory = new ChatHistory();
                 clientList = new ClientList();
+                readHistoryFromFile();
+        }
+
+        private void readHistoryFromFile() {
+            BufferedReader reader;
+
+            try {
+                reader = new BufferedReader(new FileReader(filepath));
+                String line = reader.readLine();
+
+                while (line != null) {
+                    System.out.println(line);
+                    // read next line
+                    line = reader.readLine();
+                }
+
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        private void writeHistoryToFile(Message message) {
+            try {
+                FileWriter writer = new FileWriter(filepath, true);
+                writer.write(message.sender + ": " + message.text + "(" + message.date + ")\n");
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override
@@ -41,6 +75,7 @@ public class ServerImpl implements Server_itf {
         @Override
         public void sendMessage(Message m) throws RemoteException {
 			chatHistory.loadNewMessage(m);
+            writeHistoryToFile(m);
         }
 
         @Override
