@@ -5,7 +5,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.text.ParseException;
 import java.util.*;
+import java.text.SimpleDateFormat;
 
 public class ServerImpl implements Server_itf {
 
@@ -42,7 +44,11 @@ public class ServerImpl implements Server_itf {
                 String line = reader.readLine();
 
                 while (line != null) {
-                    System.out.println(line);
+                    String[] lines = line.split("[-()]");
+                    SimpleDateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss");
+                    Date date = formatter.parse(lines[2]);
+                    Message mes = new Message(Integer.parseInt(lines[0].replaceAll(" ", "")), lines[1], date);
+                    chatHistory.loadNewMessage(mes);
                     // read next line
                     line = reader.readLine();
                 }
@@ -50,12 +56,16 @@ public class ServerImpl implements Server_itf {
                 reader.close();
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
             }
         }
         private void writeHistoryToFile(Message message) {
             try {
                 FileWriter writer = new FileWriter(filepath, true);
-                writer.write(message.sender + ": " + message.text + "(" + message.date + ")\n");
+                SimpleDateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss");
+                String strDate = formatter.format(message.date);
+                writer.write(message.sender + " - " + message.text + "(" + strDate + ")\n");
                 writer.close();
             } catch (IOException e) {
                 e.printStackTrace();
