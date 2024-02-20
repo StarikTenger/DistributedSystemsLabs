@@ -1,3 +1,5 @@
+package hello;
+
 import java.rmi.*;
 
 public interface Info_itf extends Remote {

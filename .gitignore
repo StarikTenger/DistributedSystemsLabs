@@ -1,2 +1,7 @@
-/temp
+chat/*.class
+hello/*.class
+.idea/
 *.class
+out/
+.DS_Store
+*.iml

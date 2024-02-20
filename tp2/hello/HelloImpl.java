@@ -1,3 +1,4 @@
+package hello;
 
 import java.rmi.*;
 
