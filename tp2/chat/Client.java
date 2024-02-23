@@ -120,7 +120,7 @@ public class Client {
 		}
     }
 
-    private static void processCommand(String command) {
+    private static void processCommand(String command) throws RemoteException {
         switch (command) {
             case "#quit":
                 quit();
@@ -133,8 +133,11 @@ public class Client {
         }
     }
 
-    private static void quit() {
+    private static void quit() throws RemoteException {
         System.out.println("Quitting the program.");
+		for (Map.Entry<Integer, Client_itf> entry : client.connected.entrySet()) {
+			entry.getValue().disconnect(client.id);
+		}
         System.exit(0);
     }
 
