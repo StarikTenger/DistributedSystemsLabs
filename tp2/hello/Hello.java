@@ -1,5 +1,3 @@
-package hello;
-
 import java.rmi.*;
 
 public interface Hello extends Remote {

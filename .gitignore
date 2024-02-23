@@ -1,7 +1,2 @@
-chat/*.class
-hello/*.class
-.idea/
+/temp
 *.class
-out/
-.DS_Store
-*.iml

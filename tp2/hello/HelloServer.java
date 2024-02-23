@@ -1,4 +1,3 @@
-package hello;
 
 import java.rmi.*; 
 import java.rmi.server.*; 
@@ -15,7 +14,7 @@ public class HelloServer {
 	    // Register the remote object in RMI registry with a given identifier
 	    Registry registry = null;
 	    if (args.length>0)
-		    registry= LocateRegistry.getRegistry(Integer.parseInt(args[0]));
+		    registry= LocateRegistry.getRegistry(Integer.parseInt(args[0])); 
 	    else
 		    registry = LocateRegistry.getRegistry();
 	    registry.bind("HelloService", h_stub);
