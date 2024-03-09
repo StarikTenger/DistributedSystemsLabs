@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/dist_sys.iml" filepath="$PROJECT_DIR$/dist_sys.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tp3/tutorial/hello/hello.iml" filepath="$PROJECT_DIR$/tp3/tutorial/hello/hello.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tp1/tp1.iml" filepath="$PROJECT_DIR$/tp1/tp1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tp3/tutorial/tutorial.iml" filepath="$PROJECT_DIR$/tp3/tutorial/tutorial.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tp3/tutorial/work_queues/work_queues.iml" filepath="$PROJECT_DIR$/tp3/tutorial/work_queues/work_queues.iml" />
+    </modules>
+  </component>
+</project>

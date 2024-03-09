@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/tutorial/hello/hello.iml" filepath="$PROJECT_DIR$/tutorial/hello/hello.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jar/jar.iml" filepath="$PROJECT_DIR$/jar/jar.iml" />
+      <module fileurl="file://$PROJECT_DIR$/pingpong/pingpong.iml" filepath="$PROJECT_DIR$/pingpong/pingpong.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tutorial/pubsub/pubsub.iml" filepath="$PROJECT_DIR$/tutorial/pubsub/pubsub.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/tp3.iml" filepath="$PROJECT_DIR$/.idea/tp3.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tutorial/tutorial.iml" filepath="$PROJECT_DIR$/tutorial/tutorial.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tutorial/work_queues/work_queues.iml" filepath="$PROJECT_DIR$/tutorial/work_queues/work_queues.iml" />
+    </modules>
+  </component>
+</project>
