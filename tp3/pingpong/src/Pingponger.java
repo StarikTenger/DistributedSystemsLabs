@@ -37,50 +37,61 @@ public class Pingponger {
         channel.queueBind(queueName, EXCHANGE_NAME, "");
 
         System.out.println(" ID of participant '" + id + "'");
-        System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
-
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
             resMes(message);
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
+        sendPing();
     }
 
-    public void ping() {}
-    public void pong() {}
+    public static void sendPing() {
+        sendMes("ping " + id);
+    }
+    public static void sendPong() {
+        sendMes("pong " + id);
+    }
     public void start() {}
     public void init_conn() {}
     public void ok_conn() {}
 
-    public void sendMes(String message) {
+    public static void sendMes(String message) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         try {
             channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes("UTF-8"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(" [x] Sent '" + message + "'");
     }
 
     public static void resMes(String message) {
         String[] expression = message.split(" ");
-        switch(expression[0]) {
-            case "ping":
-                // code block
-                break;
-            case "pong":
-                // code block
-                break;
-            case "start":
-                // code block
-                break;
-            case "init_conn":
-                // code block
-                break;
-            case "ok_conn":
-                // code block
-                break;
-            default:
-                // code block
+        if (Integer.valueOf(expression[1]) != id) {
+            switch(expression[0]) {
+                case "ping":
+                    System.out.println("Received ping from: " + expression[1]);
+                    sendPong();
+                    break;
+                case "pong":
+                    System.out.println("Received pong from: " + expression[1]);
+                    sendPing();
+                    break;
+                case "start":
+                    // code block
+                    break;
+                case "init_conn":
+                    // code block
+                    break;
+                case "ok_conn":
+                    // code block
+                    break;
+                default:
+                    // code block
+            }
         }
     }
 }
