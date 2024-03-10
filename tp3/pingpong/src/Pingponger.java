@@ -20,6 +20,7 @@ public class Pingponger {
     private static int id;
     private static Channel channel;
     private static Status status;
+	private static int message_count;
 
     enum Status {
         IDLE,
@@ -122,7 +123,8 @@ public class Pingponger {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
             String time = new SimpleDateFormat("HH:mm:ss").format(new Date());
-            System.out.println("Received " + message + " time: " + time);
+			message_count++;
+            System.out.println(String.valueOf(message_count) + ") Received " + message + " time: " + time);
             sendPingPong(mes, severityPub);
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });

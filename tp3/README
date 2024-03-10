@@ -16,7 +16,7 @@ brew services stop rabbitmq
 
 # build and run for god damn windows
 javac --release 8 -d build/ -cp "../../../jar/*" *.java
-java -classpath "../../../jar/*;build" Send.java
+java -classpath "../../jar/*;." Pingponger
 
 ==================================================
                      CLA
