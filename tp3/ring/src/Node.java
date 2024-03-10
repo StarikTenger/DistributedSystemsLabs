@@ -11,7 +11,6 @@ public class Node {
     private Status status;
 	private Channel channel;
 	private String nextNodeQueue;
-	private String EXCHANGE_NAME = "election";
 
     enum Status {
         IDLE,
@@ -46,26 +45,30 @@ public class Node {
 			//this.channel = channel;
 			
 			channel.queueDeclare(queueName, false, false, false, null);
-			channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+			//channel.exchangeDeclare("", "fanout");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
     }
 
     public void connect(String nextNodeQueue) {
-		
 
 		DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 			try {
 				String message = new String(delivery.getBody(), "UTF-8");
 				log(queueName + " Received: " + 	message);
-				handleMessage(message, channel, nextNodeQueue);
+				handleMessage(message);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		};
 
-		try {
+		ConnectionFactory factory = new ConnectionFactory();
+		factory.setHost("localhost");
+
+		try (Connection connection = factory.newConnection()) {
+			channel = connection.createChannel();
+			channel.queueDeclare(nextNodeQueue, false, false, false, null);
 			channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
 			});
 	
@@ -77,11 +80,11 @@ public class Node {
 	}
 
 
-    private void handleMessage(String message, Channel channel, String nextNodeQueue) throws Exception {
+    private void handleMessage(String message) throws Exception {
         if (message.startsWith("ELECTION")) {
             // Handle election message
             ElectionMessage electionMessage = deserializeElectionMessage(message.substring(9));
-            handleElectionMessage(electionMessage, channel, nextNodeQueue);
+            handleElectionMessage(electionMessage);
         } else {
             // Process regular message
             // For simplicity, let's assume processing a regular message involves printing it
@@ -99,12 +102,12 @@ public class Node {
         electionMessage.maxId = id;
 
         // Send election message to the next node in the ring
-        channel.basicPublish(EXCHANGE_NAME, nextNodeQueue, null, serializeElectionMessage(electionMessage).getBytes("UTF-8"));
+        channel.basicPublish("", nextNodeQueue, null, serializeElectionMessage(electionMessage).getBytes("UTF-8"));
 
         log("Started Election");
     }
 
-    private void handleElectionMessage(ElectionMessage electionMessage, Channel channel, String nextNodeQueue) throws Exception {
+    private void handleElectionMessage(ElectionMessage electionMessage) throws Exception {
         log("Received Election Message from Node " + electionMessage.senderId +
                 " with maxId " + electionMessage.maxId);
 
@@ -126,13 +129,13 @@ public class Node {
     private void forwardElectionMessage(Channel channel, String nextNodeQueue, ElectionMessage electionMessage) throws Exception {
         // Forward the election message to the next node in the ring
         String serializedMessage = "ELECTION" + serializeElectionMessage(electionMessage);
-        channel.basicPublish(EXCHANGE_NAME, nextNodeQueue, null, serializedMessage.getBytes("UTF-8"));
+        channel.basicPublish("", nextNodeQueue, null, serializedMessage.getBytes("UTF-8"));
         log("Forwarded Election Message to Node " + nextNodeQueue);
     }
 
     private void forwardMessage(Channel channel, String nextNodeQueue, String message) throws Exception {
         // Forward the message to the next node in the ring
-        channel.basicPublish(EXCHANGE_NAME, nextNodeQueue, null, message.getBytes("UTF-8"));
+        channel.basicPublish("", nextNodeQueue, null, message.getBytes("UTF-8"));
         log(queueName + " Forwarded: " + message);
     }
 
