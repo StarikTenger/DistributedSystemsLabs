@@ -7,7 +7,9 @@
     <list default="true" id="5b52c5ed-fb27-4188-a0d7-bdd30b83d512" name="Changes" comment="Merge changes">
       <change beforePath="$PROJECT_DIR$/../tp1" beforeDir="false" afterPath="$PROJECT_DIR$/../tp1" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../tp3/pingpong/src/Pingponger.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tp3/pingpong/src/Pingponger.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tp3/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../tp3/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tp3/README" beforeDir="false" afterPath="$PROJECT_DIR$/../tp3/README" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tp3/ring/src/Node.java" beforeDir="false" afterPath="$PROJECT_DIR$/../tp3/ring/src/Node.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -179,7 +181,9 @@
       <workItem from="1708710653808" duration="183000" />
       <workItem from="1708710860505" duration="12000" />
       <workItem from="1708710974053" duration="45000" />
-      <workItem from="1708711054360" duration="3991000" />
+      <workItem from="1708711054360" duration="4782000" />
+      <workItem from="1710092983583" duration="1195000" />
+      <workItem from="1710094197227" duration="598000" />
     </task>
     <task id="LOCAL-00001" summary="Merge changes">
       <created>1708713238754</created>
