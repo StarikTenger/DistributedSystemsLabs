@@ -1,5 +1,7 @@
 import com.rabbitmq.client.*;
 
+import static java.lang.Math.log;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -9,6 +11,7 @@ public class Node {
     private Status status;
 	private Channel channel;
 	private String nextNodeQueue;
+	private String EXCHANGE_NAME = "election";
 
     enum Status {
         IDLE,
@@ -33,55 +36,42 @@ public class Node {
         this.queueName = queueName;
         status = Status.IDLE;
         log("Created");
+
+		ConnectionFactory factory = new ConnectionFactory();
+		factory.setHost("localhost");
+
+		try (Connection connection = factory.newConnection()) {
+
+			channel = connection.createChannel();
+			//this.channel = channel;
+			
+			channel.queueDeclare(queueName, false, false, false, null);
+			channel.exchangeDeclare(EXCHANGE_NAME, "fanout");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
 
     public void connect(String nextNodeQueue) {
-		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost("localhost");
-		this.nextNodeQueue = nextNodeQueue;
+		
 
-		try (Connection connection = factory.newConnection();
-			Channel channel = connection.createChannel()) {
+		DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+			try {
+				String message = new String(delivery.getBody(), "UTF-8");
+				log(queueName + " Received: " + 	message);
+				handleMessage(message, channel, nextNodeQueue);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		};
 
-			this.channel = channel;
-			
-			channel.queueDeclare(queueName, false, false, false, null);
-
-			DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-				try {
-					String message = new String(delivery.getBody(), "UTF-8");
-					log(queueName + " Received: " + message);
-					handleMessage(message, channel, nextNodeQueue);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			};
-
+		try {
 			channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
 			});
-
+	
 			log("Connected " + queueName + " to " + nextNodeQueue);
-
-			//startElection(channel, nextNodeQueue);
-
-			// while (true) {
-			// 	// Check if an election needs to be started
-			// 	if (status == Status.IDLE) {
-			// 		try {
-			// 			startElection(channel, nextNodeQueue);
-			// 		} catch (Exception e) {
-			// 			e.printStackTrace();
-			// 		}
-			// 	}
-
-			// 	// Add some delay between iterations
-			// 	try {
-			// 		Thread.sleep(1000);
-			// 	} catch (InterruptedException e) {
-			// 		e.printStackTrace();
-			// 	}
-			// }
 		} catch (Exception e) {
+			log("Failed to connect");
 			e.printStackTrace();
 		}
 	}
@@ -109,7 +99,7 @@ public class Node {
         electionMessage.maxId = id;
 
         // Send election message to the next node in the ring
-        channel.basicPublish("", nextNodeQueue, null, serializeElectionMessage(electionMessage).getBytes("UTF-8"));
+        channel.basicPublish(EXCHANGE_NAME, nextNodeQueue, null, serializeElectionMessage(electionMessage).getBytes("UTF-8"));
 
         log("Started Election");
     }
@@ -136,13 +126,13 @@ public class Node {
     private void forwardElectionMessage(Channel channel, String nextNodeQueue, ElectionMessage electionMessage) throws Exception {
         // Forward the election message to the next node in the ring
         String serializedMessage = "ELECTION" + serializeElectionMessage(electionMessage);
-        channel.basicPublish("", nextNodeQueue, null, serializedMessage.getBytes("UTF-8"));
+        channel.basicPublish(EXCHANGE_NAME, nextNodeQueue, null, serializedMessage.getBytes("UTF-8"));
         log("Forwarded Election Message to Node " + nextNodeQueue);
     }
 
     private void forwardMessage(Channel channel, String nextNodeQueue, String message) throws Exception {
         // Forward the message to the next node in the ring
-        channel.basicPublish("", nextNodeQueue, null, message.getBytes("UTF-8"));
+        channel.basicPublish(EXCHANGE_NAME, nextNodeQueue, null, message.getBytes("UTF-8"));
         log(queueName + " Forwarded: " + message);
     }
 

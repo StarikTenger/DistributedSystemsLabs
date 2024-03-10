@@ -17,7 +17,6 @@ public class RingTopology {
         }
 
 		try {
-			Thread.sleep(1000);
             node1.startElection();
         } catch (Exception e) {
             e.printStackTrace();
