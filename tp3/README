@@ -14,8 +14,12 @@ brew services start rabbitmq
 # stops the locally running RabbitMQ node
 brew services stop rabbitmq
 
+# build and run for god damn windows
+javac --release 8 -d build/ -cp "../../../jar/*" *.java
+java -classpath "../../../jar/*;build" Send.java
+
 ==================================================
-                     CLASSPATH
+                     CLA
 ==================================================
 
 # To use jars in the project, we should define it in CLASSPATH:
