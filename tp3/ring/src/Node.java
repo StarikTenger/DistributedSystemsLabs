@@ -2,13 +2,13 @@ import com.rabbitmq.client.*;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 public class Node {
     private String queueName;
     private int id;
     private Status status;
+	private Channel channel;
+	private String nextNodeQueue;
 
     enum Status {
         IDLE,
@@ -35,75 +35,123 @@ public class Node {
         log("Created");
     }
 
-    public void connect(String nextNodeQueue) throws Exception {
-        ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
+    public void connect(String nextNodeQueue) {
+		ConnectionFactory factory = new ConnectionFactory();
+		factory.setHost("localhost");
+		this.nextNodeQueue = nextNodeQueue;
 
-        try (Connection connection = factory.newConnection();
-             Channel channel = connection.createChannel()) {
+		try (Connection connection = factory.newConnection();
+			Channel channel = connection.createChannel()) {
 
-            channel.queueDeclare(queueName, false, false, false, null);
+			this.channel = channel;
+			
+			channel.queueDeclare(queueName, false, false, false, null);
 
-            while (true) {
-                // Receive a message
-                GetResponse response = channel.basicGet(queueName, true);
-                if (response != null) {
-                    String message = new String(response.getBody(), "UTF-8");
-                    System.out.println(queueName + " Received: " + message);
+			DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+				try {
+					String message = new String(delivery.getBody(), "UTF-8");
+					log(queueName + " Received: " + message);
+					handleMessage(message, channel, nextNodeQueue);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			};
 
-                    // Process the message (e.g., perform some task)
+			channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
+			});
 
-                    // Forward the message to the next node in the ring
-                    forwardMessage(channel, nextNodeQueue, message);
-                }
+			log("Connected " + queueName + " to " + nextNodeQueue);
 
-                // Check if an election needs to be started
-                if (status == Status.IDLE) {
-                    startElection(channel, nextNodeQueue);
-                }
+			//startElection(channel, nextNodeQueue);
 
-                //Thread.sleep(1000); // Add some delay between iterations
-            }
+			// while (true) {
+			// 	// Check if an election needs to be started
+			// 	if (status == Status.IDLE) {
+			// 		try {
+			// 			startElection(channel, nextNodeQueue);
+			// 		} catch (Exception e) {
+			// 			e.printStackTrace();
+			// 		}
+			// 	}
+
+			// 	// Add some delay between iterations
+			// 	try {
+			// 		Thread.sleep(1000);
+			// 	} catch (InterruptedException e) {
+			// 		e.printStackTrace();
+			// 	}
+			// }
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
+    private void handleMessage(String message, Channel channel, String nextNodeQueue) throws Exception {
+        if (message.startsWith("ELECTION")) {
+            // Handle election message
+            ElectionMessage electionMessage = deserializeElectionMessage(message.substring(9));
+            handleElectionMessage(electionMessage, channel, nextNodeQueue);
+        } else {
+            // Process regular message
+            // For simplicity, let's assume processing a regular message involves printing it
+            log("Processing Regular Message: " + message);
+
+            // Forward the message to the next node in the ring
+            forwardMessage(channel, nextNodeQueue, message);
         }
     }
 
-    private void forwardMessage(Channel channel, String nextNodeQueue, String message) throws Exception {
-        // Forward the message to the next node in the ring
-        channel.basicPublish("", nextNodeQueue, null, message.getBytes("UTF-8"));
-        System.out.println(queueName + " Forwarded: " + message);
-    }
-
-    private void startElection(Channel channel, String nextNodeQueue) throws Exception {
+    public void startElection() throws Exception {
         status = Status.ELECTION_IN_PROGRESS;
         ElectionMessage electionMessage = new ElectionMessage();
         electionMessage.senderId = id;
         electionMessage.maxId = id;
 
         // Send election message to the next node in the ring
-        channel.basicPublish("", nextNodeQueue, null, serializeElectionMessage(electionMessage));
+        channel.basicPublish("", nextNodeQueue, null, serializeElectionMessage(electionMessage).getBytes("UTF-8"));
 
         log("Started Election");
+    }
 
-        // Wait for a response from the next node
-        TimeUnit.SECONDS.sleep(2); // Adjust the waiting time based on your requirements
+    private void handleElectionMessage(ElectionMessage electionMessage, Channel channel, String nextNodeQueue) throws Exception {
+        log("Received Election Message from Node " + electionMessage.senderId +
+                " with maxId " + electionMessage.maxId);
 
-        // Check if this node won the election
-        if (status == Status.ELECTION_IN_PROGRESS) {
+        // Compare maxId to the node's id
+        if (electionMessage.maxId > id) {
+            // Update maxId and forward the election message
+            electionMessage.maxId = id;
+            forwardElectionMessage(channel, nextNodeQueue, electionMessage);
+        } else if (electionMessage.senderId != id) {
+            // Forward the election message to the next node
+            forwardElectionMessage(channel, nextNodeQueue, electionMessage);
+        } else if (electionMessage.senderId == id && electionMessage.maxId == id) {
+            // Node becomes the leader
             status = Status.LEADER;
             log("Elected as Leader");
         }
     }
 
-    private byte[] serializeElectionMessage(ElectionMessage message) throws Exception {
-        // Convert ElectionMessage to byte array (You may use serialization libraries like Gson, Jackson, etc.)
-        // For simplicity, we use a simple string format
-        return (message.senderId + "," + message.maxId).getBytes("UTF-8");
+    private void forwardElectionMessage(Channel channel, String nextNodeQueue, ElectionMessage electionMessage) throws Exception {
+        // Forward the election message to the next node in the ring
+        String serializedMessage = "ELECTION" + serializeElectionMessage(electionMessage);
+        channel.basicPublish("", nextNodeQueue, null, serializedMessage.getBytes("UTF-8"));
+        log("Forwarded Election Message to Node " + nextNodeQueue);
     }
 
-    private ElectionMessage deserializeElectionMessage(byte[] data) throws Exception {
-        // Convert byte array to ElectionMessage (You may use serialization libraries like Gson, Jackson, etc.)
-        // For simplicity, we use a simple string format
-        String[] parts = new String(data, "UTF-8").split(",");
+    private void forwardMessage(Channel channel, String nextNodeQueue, String message) throws Exception {
+        // Forward the message to the next node in the ring
+        channel.basicPublish("", nextNodeQueue, null, message.getBytes("UTF-8"));
+        log(queueName + " Forwarded: " + message);
+    }
+
+    private String serializeElectionMessage(ElectionMessage message) {
+        return message.senderId + "," + message.maxId;
+    }
+
+    private ElectionMessage deserializeElectionMessage(String data) {
+        String[] parts = data.split(",");
         ElectionMessage message = new ElectionMessage();
         message.senderId = Integer.parseInt(parts[0]);
         message.maxId = Integer.parseInt(parts[1]);
