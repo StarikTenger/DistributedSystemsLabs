@@ -9,7 +9,8 @@ public class Node {
     private String queueName;
     private int id;
     private Status status;
-	private Channel channel;
+	private Channel channel_in;
+	private Channel channel_out;
 	private String nextNodeQueue;
 
     enum Status {
@@ -36,23 +37,6 @@ public class Node {
         status = Status.IDLE;
         log("Created");
 
-		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost("localhost");
-
-		try (Connection connection = factory.newConnection()) {
-
-			channel = connection.createChannel();
-			//this.channel = channel;
-			
-			channel.queueDeclare(queueName, false, false, false, null);
-			//channel.exchangeDeclare("", "fanout");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    }
-
-    public void connect(String nextNodeQueue) {
-
 		DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 			try {
 				String message = new String(delivery.getBody(), "UTF-8");
@@ -67,11 +51,29 @@ public class Node {
 		factory.setHost("localhost");
 
 		try (Connection connection = factory.newConnection()) {
-			channel = connection.createChannel();
-			channel.queueDeclare(nextNodeQueue, false, false, false, null);
-			channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
-			});
+
+			channel_in = connection.createChannel();
+			//this.channel = channel;
+			
+			channel_in.queueDeclare(queueName, false, false, false, null);
+			channel_in.basicConsume(queueName, true, deliverCallback, consumerTag -> {});
 	
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+
+    public void connect(String nextNodeQueue) {
+
+		
+
+		ConnectionFactory factory = new ConnectionFactory();
+		factory.setHost("localhost");
+
+		try (Connection connection = factory.newConnection()) {
+			channel_out = connection.createChannel();
+			channel_out.queueDeclare(nextNodeQueue, false, false, false, null);
+			
 			log("Connected " + queueName + " to " + nextNodeQueue);
 		} catch (Exception e) {
 			log("Failed to connect");
@@ -91,7 +93,7 @@ public class Node {
             log("Processing Regular Message: " + message);
 
             // Forward the message to the next node in the ring
-            forwardMessage(channel, nextNodeQueue, message);
+            forwardMessage(channel_out, nextNodeQueue, message);
         }
     }
 
@@ -102,7 +104,7 @@ public class Node {
         electionMessage.maxId = id;
 
         // Send election message to the next node in the ring
-        channel.basicPublish("", nextNodeQueue, null, serializeElectionMessage(electionMessage).getBytes("UTF-8"));
+        channel_out.basicPublish("", nextNodeQueue, null, serializeElectionMessage(electionMessage).getBytes("UTF-8"));
 
         log("Started Election");
     }
@@ -115,10 +117,10 @@ public class Node {
         if (electionMessage.maxId > id) {
             // Update maxId and forward the election message
             electionMessage.maxId = id;
-            forwardElectionMessage(channel, nextNodeQueue, electionMessage);
+            forwardElectionMessage(channel_out, nextNodeQueue, electionMessage);
         } else if (electionMessage.senderId != id) {
             // Forward the election message to the next node
-            forwardElectionMessage(channel, nextNodeQueue, electionMessage);
+            forwardElectionMessage(channel_out, nextNodeQueue, electionMessage);
         } else if (electionMessage.senderId == id && electionMessage.maxId == id) {
             // Node becomes the leader
             status = Status.LEADER;
@@ -129,13 +131,13 @@ public class Node {
     private void forwardElectionMessage(Channel channel, String nextNodeQueue, ElectionMessage electionMessage) throws Exception {
         // Forward the election message to the next node in the ring
         String serializedMessage = "ELECTION" + serializeElectionMessage(electionMessage);
-        channel.basicPublish("", nextNodeQueue, null, serializedMessage.getBytes("UTF-8"));
+        channel_out.basicPublish("", nextNodeQueue, null, serializedMessage.getBytes("UTF-8"));
         log("Forwarded Election Message to Node " + nextNodeQueue);
     }
 
     private void forwardMessage(Channel channel, String nextNodeQueue, String message) throws Exception {
         // Forward the message to the next node in the ring
-        channel.basicPublish("", nextNodeQueue, null, message.getBytes("UTF-8"));
+        channel_out.basicPublish("", nextNodeQueue, null, message.getBytes("UTF-8"));
         log(queueName + " Forwarded: " + message);
     }
 
