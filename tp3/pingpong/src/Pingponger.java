@@ -4,6 +4,8 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeoutException;
 
@@ -12,7 +14,9 @@ import static java.lang.Math.random;
 
 public class Pingponger {
     private static final String EXCHANGE_NAME_HANDSHAKE = "handshake";
-    private static final String SEVERITY = "pingpong";
+    private static final String EXCHANGE_NAME_PINGPONG = "pingpong";
+    private static final String SEVERITY_PING = "ping";
+    private static final String SEVERITY_PONG = "pong";
     private static int id;
     private static Channel channel;
     private static Status status;
@@ -34,14 +38,13 @@ public class Pingponger {
 
         System.out.println("Send s to start");
         Scanner scanner = new Scanner(System.in);
-        while (true) {
+        while (status == Status.IDLE) {
             String message = scanner.nextLine();
             if (message.startsWith("s")) {
                 sendStart();
+                break;
             }
         }
-
-//        sendPing();
     }
 
     private static void connect() throws IOException, TimeoutException {
@@ -68,34 +71,34 @@ public class Pingponger {
     public static void sendStart() {
         if (status == Status.IDLE) {
             status = Status.WAITING;
-            sendMes("init_conn " + id);
+            sendHandshake("init_conn " + id);
             System.out.println("Sent init_conn");
         } else {
             System.out.println("Already started");
         }
     }
 
-    public static void resMesHandshake(String message) {
+    public static void resMesHandshake(String message) throws IOException {
         String[] expression = message.split(" ");
         int idSender = Integer.valueOf(expression[1]);
         if (idSender != id) {
+            System.out.println("Received " + expression[0]);
             switch(expression[0]) {
                 case "init_conn":
-                    System.out.println("Received init_conn");
                     if (idSender < id) {
                         status = Status.STARTED;
-                        sendMes("ok_conn " + id);
+                        sendHandshake("ok_conn " + id);
                         System.out.println("Sent ok_conn");
+                        confPingPong(false);
                     } else if (status == Status.IDLE && idSender > id) {
                         status = Status.WAITING;
-                        sendMes("init_conn " + id);
+                        sendHandshake("init_conn " + id);
                         System.out.println("No, your id is bigger, sent ok_conn");
                     }
                     break;
                 case "ok_conn":
                     status = Status.STARTED;
-                    System.out.println("Received ok_conn");
-//                    sendPing();
+                    confPingPong(true);
                     break;
                 default:
                     // code block
@@ -103,40 +106,46 @@ public class Pingponger {
         }
     }
 
-    public static void sendPing() {
-        sendMes("ping " + id);
-    }
-    public static void sendPong() {
-        sendMes("pong " + id);
+    public static void confPingPong(Boolean isPing) throws IOException {
+        String severitySub = isPing ? SEVERITY_PONG : SEVERITY_PING;
+        String severityPub = isPing ? SEVERITY_PING : SEVERITY_PONG;
+        String mes = isPing ? "ping" : "pong";
+
+        channel.exchangeDeclare(EXCHANGE_NAME_PINGPONG, "direct");
+        String queueName = channel.queueDeclare().getQueue();
+        // subscribe to messages
+        channel.queueBind(queueName, EXCHANGE_NAME_PINGPONG, severitySub);
+
+        // send the first pong
+        if (isPing) sendPingPong(mes, severityPub);
+
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), "UTF-8");
+            String time = new SimpleDateFormat("HH:mm:ss").format(new Date());
+            System.out.println("Received " + message + " time: " + time);
+            sendPingPong(mes, severityPub);
+        };
+        channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
 
-    public static void sendMes(String message) {
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+
+    public static void sendHandshake(String message) {
         try {
             channel.basicPublish(EXCHANGE_NAME_HANDSHAKE, "", null, message.getBytes("UTF-8"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
-    public static void resMes(String message) {
-        String[] expression = message.split(" ");
-        switch(expression[0]) {
-            case "ping":
-                System.out.println("Received ping from: " + expression[1]);
-                sendPong();
-                break;
-            case "pong":
-                System.out.println("Received pong from: " + expression[1]);
-                sendPing();
-                break;
-            default:
-                // code block
-                break;
+    public static void sendPingPong(String message, String severity) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            channel.basicPublish(EXCHANGE_NAME_PINGPONG, severity, null, message.getBytes("UTF-8"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
