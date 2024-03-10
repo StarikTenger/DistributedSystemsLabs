@@ -24,3 +24,9 @@ java -classpath "../../../jar/*;build" Send.java
 
 # To use jars in the project, we should define it in CLASSPATH:
 https://docs.oracle.com/javase/1.5.0/docs/tooldocs/windows/classpath.html
+
+==================================================
+                     REMINDERS
+==================================================
+
+# Change the name of the queue to not confuse with other queues in the local network
