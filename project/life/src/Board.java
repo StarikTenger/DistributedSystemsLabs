@@ -1,8 +1,13 @@
 import java.util.Optional;
 
 public class Board {
+    enum Directions {
+        UL, U, UR,
+        L, C, R,
+        DL, D, DR
+    }
     static final int BOARD_SIZE = 5;
-    static final int MARGIN_SIZE = 1; // margin of processing neighbours
+    static final int MARGIN_SIZE = 1; // margin of processing neighbors
     private CellState[][] cells;
     private CellState[][] nextCells;
 
@@ -25,6 +30,10 @@ public class Board {
                 cells[i+BOARD_SIZE][j+BOARD_SIZE] = nextCells[i][j];
             }
         }
+    }
+
+    public void handleNeighborTable(int index, CellState[][] neighborState) {
+
     }
 
     public CellState calculateNextState(int x, int y) {
