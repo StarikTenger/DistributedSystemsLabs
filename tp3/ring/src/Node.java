@@ -14,7 +14,6 @@ public class Node {
 
     enum Status {
         IDLE,
-        STARTED,
         LEADER,
         NOT_LEADER,
         ELECTION_IN_PROGRESS
@@ -66,18 +65,8 @@ public class Node {
 
 
     private void handleMessage(String message) throws Exception {
-        if (message.startsWith("ELECTION")) {
-            // Handle election message
-            ElectionMessage electionMessage = deserializeElectionMessage(message.substring(9));
-            handleElectionMessage(electionMessage);
-        } else {
-            // Process regular message
-            // For simplicity, let's assume processing a regular message involves printing it
-            log("Processing Regular Message: " + message);
-
-            // Forward the message to the next node in the ring
-            forwardMessage(message);
-        }
+        ElectionMessage electionMessage = deserializeElectionMessage(message);
+        handleElectionMessage(electionMessage);
     }
 
     public void startElection() throws Exception {
@@ -94,11 +83,18 @@ public class Node {
     }
 
     private void handleElectionMessage(ElectionMessage electionMessage) throws Exception {
-        log("Received Election Message from Node " + electionMessage.senderId +
-                " with maxId " + electionMessage.maxId);
+
+		if (status != Status.ELECTION_IN_PROGRESS && status != Status.IDLE) {
+			log("STOOOOOP!!!!!");
+			return;
+		}
+
+		if (status == Status.IDLE) {
+			startElection();
+		}
 
         // Compare maxId to the node's id
-        if (electionMessage.maxId > id) {
+        if (electionMessage.maxId < id) {
             // Update maxId and forward the election message
             electionMessage.maxId = id;
             forwardElectionMessage(electionMessage);
@@ -109,12 +105,16 @@ public class Node {
             // Node becomes the leader
             status = Status.LEADER;
             log("Elected as Leader");
-        }
+        } else {
+			forwardElectionMessage(electionMessage);
+			status = Status.NOT_LEADER;
+			log("I am not Leader");
+		}
     }
 
     private void forwardElectionMessage(ElectionMessage electionMessage) throws Exception {
         // Forward the election message to the next node in the ring
-        String serializedMessage = "ELECTION" + serializeElectionMessage(electionMessage);
+        String serializedMessage = serializeElectionMessage(electionMessage);
         channel.basicPublish("", nextNodeQueue, null, serializedMessage.getBytes("UTF-8"));
         log("Forwarded Election Message to Node " + nextNodeQueue);
     }
