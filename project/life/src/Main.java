@@ -8,5 +8,8 @@ public class Main {
 
         Board board0 = new Board(0, new Integer[] {null, null, null, null, 1, null, null, null});
         Board board1 = new Board(1, new Integer[] {null, null, null, 0, null, null, null, null});
+
+        board0.connectToNeighbors();
+        board1.connectToNeighbors();
     }
 }

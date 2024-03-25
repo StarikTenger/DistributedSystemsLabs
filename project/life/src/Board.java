@@ -42,10 +42,10 @@ public class Board {
         id = i;
         exchangeCalculatedName = EXCHANGE_NAME_CALCULATED + id;
         exchangeUpdatedName = EXCHANGE_NAME_UPDATED + id;
-        connect(neighbors);
+        connect();
     }
 
-    public void connect(Integer[] neighbors) throws IOException, TimeoutException {
+    public void connect() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost("localhost");
         Connection connection = factory.newConnection();
@@ -54,10 +54,9 @@ public class Board {
         channel.exchangeDeclare(exchangeCalculatedName, "fanout");
         channel.exchangeDeclare(exchangeUpdatedName, "fanout");
 
-        connectToNeighbors(neighbors);
     }
 
-    public void connectToNeighbors(Integer[] neighbors) throws IOException {
+    public void connectToNeighbors() throws IOException {
         for (int i = 0; i < neighbors.length; i++) {
             if (neighbors[i] != null) {
                 DeliverCallback deliverCalculatedCallback = (consumerTag, delivery) -> {
