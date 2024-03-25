@@ -27,11 +27,13 @@ public class Board {
     private static Channel channel;
     private CellState[][] cells;
     private CellState[][] nextCells;
-	private running = true;
+	private Boolean running = true;
+	private Integer[] neighbors;
 	private Boolean[] neighborsCalculated;
 	private Boolean[] neighborsUpdated;
         
-    public Board(int i, Integer[] neighbors) throws IOException, TimeoutException {
+    public Board(int i, Integer[] _neighbors) throws IOException, TimeoutException {
+		neighbors = _neighbors;
         cells = new CellState[BOARD_SIZE * 3][BOARD_SIZE * 3];
         nextCells = new CellState[BOARD_SIZE][BOARD_SIZE];
 		neighborsCalculated = new Boolean[8];
@@ -96,19 +98,24 @@ public class Board {
         channel.basicPublish(exchangeUpdatedName, "", null, messageCells.getBytes());
     }
 
-	public void start() {
+	public void start() throws IOException {
 		while (running) {
 			// Flush updated neighbors
 			Arrays.fill(neighborsUpdated, false);
 
-			// TODO: Notify neighbors that I am updated
+			// Notify neighbors that I am updated
+			publishUpdated();
 
 			// Wait for states of neighbors to be updated
-			while(!allNeighborsUpdated) {} // TODO: get rid of busy waiting
+			while(!allNeighborsUpdated()) {} // TODO: get rid of busy waiting
 
 			calculateAllStates();
 
-			// TODO: Notify neighbors that I am calculated
+			// Flush updated neighbors
+			Arrays.fill(neighborsCalculated, false);
+
+			// Notify neighbors that I am calculated
+			publishCalculated();
 
 			// Wait for all neighbors to be calculated
 			while(!allNeighborsCalculated()) {} // TODO: get rid of busy waiting
@@ -119,14 +126,14 @@ public class Board {
 
 	private Boolean allNeighborsCalculated() {
 		for (int i = 0; i < 8; i++) {
-			if (!neighborsCalculated[i]) return false;
+			if (neighbors[i] != null && !neighborsCalculated[i]) return false;
 		}
 		return true;
 	}
 
 	private Boolean allNeighborsUpdated() {
 		for (int i = 0; i < 8; i++) {
-			if (!neighborsUpdated[i]) return false;
+			if (neighbors[i] != null && !neighborsUpdated[i]) return false;
 		}
 		return true;
 	}
