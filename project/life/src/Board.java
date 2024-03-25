@@ -66,10 +66,10 @@ public class Board {
 
                 DeliverCallback deliverUpdatedCallback = (consumerTag, delivery) -> {
                     String message = new String(delivery.getBody(), "UTF-8");
-                    // TODO: parse from string to int and CellState[][]
-                    // TODO: implement the new type???
                     JSONReader reader = new JSONReader();
-                    CellState[][] neighborState = (CellState[][]) reader.read(message);
+                    Object[] data = (Object[]) reader.read(message);
+                    Integer index = (Integer) data[0];
+                    CellState[][] neighborState = (CellState[][]) data[1];
                     handleNeighborTable(index, neighborState);
                 };
                 declareQueue(QUEUE_NAME_UPDATED, EXCHANGE_NAME_UPDATED, neighbors[i], deliverUpdatedCallback);
@@ -91,10 +91,9 @@ public class Board {
 
     private void publishUpdated() throws IOException {
         JSONWriter rabbitmqJson = new JSONWriter();
-        // TODO: write id of the publisher and the new cells
-        // But maybe I just can get it from the name of the queue? It will be easier
-        String messageCells = rabbitmqJson.write(cells);
-        channel.basicPublish(exchangeUpdatedName, "", null, messageCells.getBytes());
+        Object[] data = new Object[]{id, cells};
+        String message = rabbitmqJson.write(data);
+        channel.basicPublish(exchangeUpdatedName, "", null, message.getBytes());
     }
 
 	public void start() {
