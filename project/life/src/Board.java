@@ -7,6 +7,7 @@ import com.rabbitmq.tools.json.JSONWriter;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 
 public class Board {
@@ -27,7 +28,7 @@ public class Board {
     private static Channel channel;
     private CellState[][] cells;
     private CellState[][] nextCells;
-	private running = true;
+	private Boolean running = true;
 	private Boolean[] neighborsCalculated;
 	private Boolean[] neighborsUpdated;
         
@@ -104,7 +105,7 @@ public class Board {
 			// TODO: Notify neighbors that I am updated
 
 			// Wait for states of neighbors to be updated
-			while(!allNeighborsUpdated) {} // TODO: get rid of busy waiting
+			while(!allNeighborsUpdated()) {} // TODO: get rid of busy waiting
 
 			calculateAllStates();
 
@@ -151,7 +152,7 @@ public class Board {
 
     }
 
-	private Vec2i getVectorForDirection(Direction direction) {
+	private Vec2i getVectorForDirection(Directions direction) {
         switch (direction) {
             case UL: return new Vec2i(-1, -1);   // Up Left
             case U:  return new Vec2i(0, -1);  // Up
@@ -168,7 +169,7 @@ public class Board {
 
     private void handleNeighborTable(int index, CellState[][] neighborCells) {
 		// Coordinates of topleft corner on united board
-		Vec2i delta = getVectorForDirection(index).add({1,1}).mult(BOARD_SIZE);
+		Vec2i delta = getVectorForDirection(Directions.values()[index]).add(new Vec2i(1,1)).mult(BOARD_SIZE);
 
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
