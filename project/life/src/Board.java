@@ -33,15 +33,31 @@ public class Board {
 	private Boolean[] neighborsCalculated;
 	private Boolean[] neighborsUpdated;
         
-    public Board(int i, Integer[] _neighbors) throws IOException, TimeoutException {
-		neighbors = _neighbors;
+    public Board(int _id, Integer[] _neighbors) throws IOException, TimeoutException {
         cells = new CellState[BOARD_SIZE * 3][BOARD_SIZE * 3];
         nextCells = new CellState[BOARD_SIZE][BOARD_SIZE];
+
+		neighbors = _neighbors;
 		neighborsCalculated = new Boolean[8];
 		neighborsUpdated = new Boolean[8];
-        id = i;
+
+        id = _id;
+
         exchangeCalculatedName = EXCHANGE_NAME_CALCULATED + id;
         exchangeUpdatedName = EXCHANGE_NAME_UPDATED + id;
+
+		log("Initialized");
+		for (int i = 0; i < 8; i++) {
+			if (neighbors[i] == null) {
+				System.out.print("- ");
+			} else {
+				System.out.print(String.valueOf(neighbors[i]) + " ");
+			}
+
+			if (i == 2 || i == 4 || i == 7) { System.out.println(); }
+			if(i == 3) { System.out.print("  "); }
+		}
+
         connect();
     }
 
@@ -57,12 +73,18 @@ public class Board {
     }
 
     public void connectToNeighbors() throws IOException {
+		log("Connecting to neighbors");
+		int connectionCounter = 0;
+
         for (int i = 0; i < neighbors.length; i++) {
             if (neighbors[i] != null) {
+				log("Connecting to neighbor " + String.valueOf(neighbors[i]));
+				
                 DeliverCallback deliverCalculatedCallback = (consumerTag, delivery) -> {
                     String message = new String(delivery.getBody(), "UTF-8");
                     handleNeighborCalc(Integer.valueOf(message));
                 };
+
                 declareQueue(QUEUE_NAME_CALCULATED, EXCHANGE_NAME_CALCULATED, neighbors[i], deliverCalculatedCallback);
 
                 DeliverCallback deliverUpdatedCallback = (consumerTag, delivery) -> {
@@ -74,9 +96,17 @@ public class Board {
                     handleNeighborTable(index, neighborState);
                 };
                 declareQueue(QUEUE_NAME_UPDATED, EXCHANGE_NAME_UPDATED, neighbors[i], deliverUpdatedCallback);
+
+				log("Connected to " + String.valueOf(neighbors[i]));
+				connectionCounter++;
             }
         }
+		log("Connected to " + String.valueOf(connectionCounter) + " neigbors");
     }
+
+	private void log(String message) {
+		System.out.println("[" + String.valueOf(id) + "]: " + message);
+	}
 
     private void declareQueue(String qName, String eName, int idNeighbor, DeliverCallback deliverCallback) throws IOException {
         String queueName = qName + id + idNeighbor;
@@ -98,7 +128,14 @@ public class Board {
     }
 
 	public void start() throws IOException {
+		log("Starting");
+		int cycleCounter = 0;
+
+
 		while (running) {
+			cycleCounter++;
+			log("Cycle " + String.valueOf(cycleCounter));
+
 			// Flush updated neighbors
 			Arrays.fill(neighborsUpdated, false);
 
@@ -108,6 +145,7 @@ public class Board {
 			// Wait for states of neighbors to be updated
 			while(!allNeighborsUpdated()) {} // TODO: get rid of busy waiting
 
+			// Calculate next_state
 			calculateAllStates();
 
 			// Flush updated neighbors
@@ -120,6 +158,8 @@ public class Board {
 			while(!allNeighborsCalculated()) {} // TODO: get rid of busy waiting
 
 			updateCells();
+
+			System.out.println();
 		}
 	}
 
