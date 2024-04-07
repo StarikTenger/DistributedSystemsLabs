@@ -30,3 +30,14 @@ https://docs.oracle.com/javase/1.5.0/docs/tooldocs/windows/classpath.html
 ==================================================
 
 # Change the name of the queue to not confuse with other queues in the local network
+
+==================================================
+                   HOW TO RUN
+==================================================
+
+# Now we have 2 boards: left and right numerated as 1 and 2
+# To run the configuration, we have to run Main in two terminals
+# We pass 1 or 2 ass command-line argument
+
+java -classpath "../jar/*;./build/" Main 1 # in one terminal
+java -classpath "../jar/*;./build/" Main 2 # in other terminal
