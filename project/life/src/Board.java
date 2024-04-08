@@ -197,7 +197,7 @@ public class Board {
 
     }
 
-	private Vec2i getVectorForDirection(Directions direction) {
+	static public Vec2i getVectorForDirection(Directions direction) {
         switch (direction) {
             case UL: return new Vec2i(-1, -1);   // Up Left
             case U:  return new Vec2i(0, -1);  // Up
