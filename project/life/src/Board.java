@@ -42,7 +42,7 @@ public class Board {
 		for (int i = 0; i < BOARD_SIZE * 3; i++) {
 			for (int j = 0; j < BOARD_SIZE * 3; j++) {
 				cells[i][j] = new CellState();
-				if (i == BOARD_SIZE + 2 && (j >= BOARD_SIZE + 1 || j <= BOARD_SIZE + 3)) {
+				if (j == BOARD_SIZE + 2 && (j >= BOARD_SIZE + 1 || j <= BOARD_SIZE + 3)) {
 					cells[i][j].isAlive = true;
 				}
 			}
@@ -168,7 +168,6 @@ public class Board {
 		while (cycleCounter < 10) {
 			cycleCounter++;
 			log("Cycle " + String.valueOf(cycleCounter));
-			print();
 
 			log("Publishing update...");
 
@@ -180,6 +179,8 @@ public class Board {
 			// Wait for states of neighbors to be updated
 			while(!allNeighborsUpdated()) {} // TODO: get rid of busy waiting
 
+			print();
+
 			// Flush updated neighbors
 			Arrays.fill(neighborsUpdated, false);
 
@@ -187,6 +188,7 @@ public class Board {
 
 			// Calculate next_state
 			calculateAllStates();
+
 
 			log("Publishing calculated...");
 
