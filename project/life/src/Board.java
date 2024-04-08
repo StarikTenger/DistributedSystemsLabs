@@ -218,10 +218,19 @@ public class Board {
 		// 	System.out.println();
 		// }
 
-		for (int i = 0; i < BOARD_SIZE * 3; i++) {
-			for (int j = 0; j < BOARD_SIZE * 3; j++) {
-				System.out.print(
-					cells[i][j].isAlive ? "X" : ".");
+		for (int j = 0; j < BOARD_SIZE * 3; j++) {
+			for (int i = 0; i < BOARD_SIZE * 3; i++) {
+				if  ((i < BOARD_SIZE && neighbors[Directions.L.ordinal()] == null) ||
+					(i >= BOARD_SIZE * 2 && neighbors[Directions.R.ordinal()] == null) ||
+					(j < BOARD_SIZE && neighbors[Directions.U.ordinal()] == null) ||
+					(j >= BOARD_SIZE * 2 && neighbors[Directions.D.ordinal()] == null)) {
+					
+						System.out.print("__");
+				} else {
+					System.out.print(
+					cells[i][j].isAlive ? "X " : ". ");
+				}
+				
 			}
 			System.out.println();
 		}
@@ -281,8 +290,15 @@ public class Board {
 
 
     private void handleNeighborTable(int index, CellState[][] neighborCells) {
+		int neighbor_dir = 0;
+		for (int i = 0; i < 8; i++) { // TODO: do this more efficiently
+			if (neighbors[i] != null && neighbors[i] == index) {
+				neighbor_dir = i;
+				break;
+			}
+		}
 		// Coordinates of topleft corner on united board
-		Vec2i delta = getVectorForDirection(Directions.values()[index]).add(new Vec2i(1,1)).mult(BOARD_SIZE);
+		Vec2i delta = getVectorForDirection(Directions.values()[neighbor_dir]).add(new Vec2i(1,1)).mult(BOARD_SIZE);
 		System.out.println(delta);
 
 		for (int i = 0; i < BOARD_SIZE; i++) {
@@ -315,9 +331,8 @@ public class Board {
     }
 
     private CellState getCellState(int x, int y) {
-        if (x < BOARD_SIZE && neighbors[Directions.L.ordinal()] == null) {
+        if (x < BOARD_SIZE && neighbors[Directions.L.ordinal()] == null)
 			return new CellState();
-		}
 		if (x >= BOARD_SIZE * 2 && neighbors[Directions.R.ordinal()] == null) 
 			return new CellState();
 		if (y < BOARD_SIZE && neighbors[Directions.U.ordinal()] == null) 
