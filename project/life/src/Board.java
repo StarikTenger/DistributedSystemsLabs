@@ -40,6 +40,9 @@ public class Board {
 		for (int i = 0; i < BOARD_SIZE * 3; i++) {
 			for (int j = 0; j < BOARD_SIZE * 3; j++) {
 				cells[i][j] = new CellState();
+				if (i == BOARD_SIZE + 2 && (j >= BOARD_SIZE + 1 || j <= BOARD_SIZE + 3)) {
+					cells[i][j].isAlive = true;
+				}
 			}	
 		}
 
@@ -141,6 +144,7 @@ public class Board {
 		while (running) {
 			cycleCounter++;
 			log("Cycle " + String.valueOf(cycleCounter));
+			print();
 
 			// Flush updated neighbors
 			Arrays.fill(neighborsUpdated, false);
@@ -165,6 +169,16 @@ public class Board {
 
 			updateCells();
 
+			System.out.println();
+		}
+	}
+
+	public void print() {
+		for (int i = 0; i < BOARD_SIZE; i++) {
+			for (int j = 0; j < BOARD_SIZE; j++) {
+				System.out.print(
+					cells[i + BOARD_SIZE][j + BOARD_SIZE].isAlive ? "X" : ".");
+			}
 			System.out.println();
 		}
 	}
@@ -234,9 +248,11 @@ public class Board {
 
     private CellState calculateNextState(int x, int y) {
         int nCount = 0;
+
+		
         for (int i = x - MARGIN_SIZE; i <= x + MARGIN_SIZE; i++) {
             for (int j = y - MARGIN_SIZE; j <= y + MARGIN_SIZE; j++) {
-                if (i != x && j != x && getCellState(i, j).isAlive) nCount++;
+                if ((i != x || j != y) && getCellState(i, j).isAlive) nCount++;
             }
         }
 
