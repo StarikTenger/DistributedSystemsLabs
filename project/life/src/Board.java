@@ -45,12 +45,15 @@ public class Board {
 				if (i == BOARD_SIZE + 2 && (j >= BOARD_SIZE + 1 || j <= BOARD_SIZE + 3)) {
 					cells[i][j].isAlive = true;
 				}
-			}	
+			}
 		}
 
 		neighbors = _neighbors;
 		neighborsCalculated = new Boolean[8];
 		neighborsUpdated = new Boolean[8];
+
+		// Flush updated neighbors
+		Arrays.fill(neighborsUpdated, false);
 
         id = _id;
 
@@ -100,6 +103,8 @@ public class Board {
 
                 DeliverCallback deliverUpdatedCallback = (consumerTag, delivery) -> {
                     String message = new String(delivery.getBody(), "UTF-8");
+					System.out.println("Got updated nbr");
+					//System.out.println(message);
                     JSONReader reader = new JSONReader();
                     ArrayList data = (ArrayList) reader.read(message);
                     Integer index = (Integer) data.get(0);
@@ -158,14 +163,20 @@ public class Board {
 			log("Cycle " + String.valueOf(cycleCounter));
 			print();
 
-			// Flush updated neighbors
-			Arrays.fill(neighborsUpdated, false);
+			log("Publishing update...");
 
 			// Notify neighbors that I am updated
 			publishUpdated();
 
+			log("Waiting for neighbors update");
+
 			// Wait for states of neighbors to be updated
 			while(!allNeighborsUpdated()) {} // TODO: get rid of busy waiting
+
+			// Flush updated neighbors
+			Arrays.fill(neighborsUpdated, false);
+
+			log("Calculating next state");
 
 			// Calculate next_state
 			calculateAllStates();
@@ -173,11 +184,17 @@ public class Board {
 			// Flush updated neighbors
 			Arrays.fill(neighborsCalculated, false);
 
+			log("Publishing calculated...");
+
 			// Notify neighbors that I am calculated
 			publishCalculated();
 
+			log("Waiting for neighbors calculated...");
+
 			// Wait for all neighbors to be calculated
 			while(!allNeighborsCalculated()) {} // TODO: get rid of busy waiting
+
+			log("Updating current state");
 
 			updateCells();
 
@@ -226,7 +243,11 @@ public class Board {
     }
 
 	public void handleNeighborCalc(int index) {
-
+		for (int i = 0; i < 8; i++) { // TODO: do this more efficiently
+			if (neighbors[i] != null && neighbors[i] == index) {
+				neighborsCalculated[i] = true;
+			}
+		}
     }
 
 	static public Vec2i getVectorForDirection(Directions direction) {
@@ -254,7 +275,11 @@ public class Board {
 			}	
 		}
 
-		neighborsCalculated[index] = true;
+		for (int i = 0; i < 8; i++) { // TODO: do this more efficiently
+			if (neighbors[i] != null && neighbors[i] == index) {
+				neighborsUpdated[i] = true;
+			}
+		}
     }
 
 
