@@ -54,6 +54,8 @@ public class Board {
 
 		// Flush updated neighbors
 		Arrays.fill(neighborsUpdated, false);
+		// Flush updated neighbors
+		Arrays.fill(neighborsCalculated, false);
 
         id = _id;
 
@@ -103,8 +105,7 @@ public class Board {
 
                 DeliverCallback deliverUpdatedCallback = (consumerTag, delivery) -> {
                     String message = new String(delivery.getBody(), "UTF-8");
-					System.out.println("Got updated nbr");
-					//System.out.println(message);
+
                     JSONReader reader = new JSONReader();
                     ArrayList data = (ArrayList) reader.read(message);
                     Integer index = (Integer) data.get(0);
@@ -181,9 +182,6 @@ public class Board {
 			// Calculate next_state
 			calculateAllStates();
 
-			// Flush updated neighbors
-			Arrays.fill(neighborsCalculated, false);
-
 			log("Publishing calculated...");
 
 			// Notify neighbors that I am calculated
@@ -193,6 +191,9 @@ public class Board {
 
 			// Wait for all neighbors to be calculated
 			while(!allNeighborsCalculated()) {} // TODO: get rid of busy waiting
+
+			// Flush updated neighbors
+			Arrays.fill(neighborsCalculated, false);
 
 			log("Updating current state");
 
