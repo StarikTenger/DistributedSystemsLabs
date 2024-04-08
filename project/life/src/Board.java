@@ -149,7 +149,13 @@ public class Board {
 
     private void publishUpdated() throws IOException {
         JSONWriter rabbitmqJson = new JSONWriter();
-        Object[] data = new Object[]{id, cells};
+        CellState[][] cellsToSend = new CellState[BOARD_SIZE][BOARD_SIZE];
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                cellsToSend[i][j] = cells[i + BOARD_SIZE][j + BOARD_SIZE];
+            }
+        }
+        Object[] data = new Object[]{id, cellsToSend};
         String message = rabbitmqJson.write(data);
         channel.basicPublish(exchangeUpdatedName, "", null, message.getBytes());
     }
@@ -159,7 +165,7 @@ public class Board {
 		int cycleCounter = 0;
 
 
-		while (running) {
+		while (cycleCounter < 10) {
 			cycleCounter++;
 			log("Cycle " + String.valueOf(cycleCounter));
 			print();
