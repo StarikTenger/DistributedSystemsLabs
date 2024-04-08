@@ -7,6 +7,7 @@ import com.rabbitmq.tools.json.JSONWriter;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeoutException;
 
@@ -99,10 +100,21 @@ public class Board {
                 DeliverCallback deliverUpdatedCallback = (consumerTag, delivery) -> {
                     String message = new String(delivery.getBody(), "UTF-8");
                     JSONReader reader = new JSONReader();
-                    Object[] data = (Object[]) reader.read(message);
-                    Integer index = (Integer) data[0];
-                    CellState[][] neighborState = (CellState[][]) data[1];
-                    handleNeighborTable(index, neighborState);
+                    ArrayList data = (ArrayList) reader.read(message);
+                    Integer index = (Integer) data.get(0);
+                    ArrayList neighborState = (ArrayList) data.get(1);
+
+                    CellState[][] cellStates = new CellState[neighborState.size()][];
+                    for (int x = 0; x < neighborState.size(); x++) {
+                        ArrayList row = (ArrayList) neighborState.get(x);
+                        cellStates[x] = new CellState[row.size()];
+                        for (int j = 0; j < row.size(); j++) {
+                            Boolean cell = (Boolean) row.get(j);
+                            System.out.println(x + " " + j + " " + cell);
+                            cellStates[x][j] = new CellState(cell);
+                        }
+                    }
+                    handleNeighborTable(index, cellStates);
                 };
                 declareQueue(QUEUE_NAME_UPDATED, EXCHANGE_NAME_UPDATED, neighbors[i], deliverUpdatedCallback);
 
