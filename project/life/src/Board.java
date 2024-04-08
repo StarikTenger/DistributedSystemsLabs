@@ -37,6 +37,12 @@ public class Board {
         cells = new CellState[BOARD_SIZE * 3][BOARD_SIZE * 3];
         nextCells = new CellState[BOARD_SIZE][BOARD_SIZE];
 
+		for (int i = 0; i < BOARD_SIZE * 3; i++) {
+			for (int j = 0; j < BOARD_SIZE * 3; j++) {
+				cells[i][j] = new CellState();
+			}	
+		}
+
 		neighbors = _neighbors;
 		neighborsCalculated = new Boolean[8];
 		neighborsUpdated = new Boolean[8];
@@ -240,8 +246,14 @@ public class Board {
     }
 
     private CellState getCellState(int x, int y) {
-        // don't forget to check the borders
-        // TODO: define default state
+        if (x < BOARD_SIZE && neighbors[Directions.L.ordinal()] == null) 
+			return new CellState();
+		if (x >= BOARD_SIZE * 2 && neighbors[Directions.R.ordinal()] == null) 
+			return new CellState();
+		if (y < BOARD_SIZE && neighbors[Directions.U.ordinal()] == null) 
+			return new CellState();
+		if (y >= BOARD_SIZE * 2 && neighbors[Directions.D.ordinal()] == null) 
+			return new CellState();
         return cells[x][y];
     }
 }
