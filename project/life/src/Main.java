@@ -5,38 +5,54 @@ import java.lang.reflect.Array;
 import java.util.concurrent.TimeoutException;
 
 public class Main {
+	public static int id;
+	public static int n;
+	public static int m;
+
+	public static Integer check_neighbor(Board.Directions dir) {
+		Vec2i pos = new Vec2i((id - 1) % n, (id - 1) / n);
+
+		pos = pos.add(Board.getVectorForDirection(dir));
+
+		if (pos.x < 0 || pos.x >= n || pos.y < 0 || pos.y >= m) {
+			return null;
+		}
+
+		return pos.y * n + pos.x + 1;
+	}
+
 	// Parameters
     public static void main(String[] args) throws IOException, TimeoutException {
 
 
-		System.out.println("Number of Command Line Argument = "+args.length);
-	
-		for(int i = 0; i< args.length; i++) {
-			System.out.println(String.format("Command Line Argument %d is '%s'", i, args[i]));
-		}
-
-		int id = 0;
-		Integer[] nbrs = new Integer[]{};
-
-		if (Integer.valueOf(args[0]) == 1) {
-			System.out.println("arg 1");
-			id = 1;
-			nbrs = new Integer[] {
-				null, null, null, 
-				null,       2, 
-				null, null, null};
-		} else if (Integer.valueOf(args[0]) == 2) {
-			System.out.println("arg 2");
-			id = 2;
-			nbrs = new Integer[] {
-				null, null, null, 
-				1,       	null, 
-				null, null, null};
-		} else {
-			System.out.println("No proper argument specified");
+		if (args.length != 3) {
+			System.out.println("Invalid number of arguments. \nUsage ./program n m id");
 			return;
 		}
 
+		
+		n = Integer.valueOf(args[0]);
+		m = Integer.valueOf(args[1]);
+		id = Integer.valueOf(args[2]);
+
+		if (n <= 0 || m <= 0 || id <= 0 || id > n * m) {
+			System.out.println("Invalid arguments:");
+			System.out.println("n and m must be > 0");
+			System.out.println("id must be between 1 and n * m");
+			return;
+		}
+
+		Integer[] nbrs = new Integer[]{};
+		nbrs = new Integer[] {
+			check_neighbor(Board.Directions.UL), 
+			check_neighbor(Board.Directions.U), 
+			check_neighbor(Board.Directions.UR),
+			check_neighbor(Board.Directions.L),
+			check_neighbor(Board.Directions.R),
+			check_neighbor(Board.Directions.DL), 
+			check_neighbor(Board.Directions.D), 
+			check_neighbor(Board.Directions.DR)
+		};
 		Board board = new Board(id, nbrs);
 
 		System.out.println("Board created. Press enter to connect");
