@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.concurrent.TimeoutException;
 
 public class Board {
@@ -106,9 +107,8 @@ public class Board {
                         ArrayList row = (ArrayList) neighborState.get(x);
                         cellStates[x] = new CellState[row.size()];
                         for (int j = 0; j < row.size(); j++) {
-                            Boolean cell = (Boolean) row.get(j);
-                            System.out.println(x + " " + j + " " + cell);
-                            cellStates[x][j] = new CellState(cell);
+                            HashMap cell = (HashMap) row.get(j);
+                            cellStates[x][j] = new CellState((Boolean) cell.get("isAlive"));
                         }
                     }
                     handleNeighborTable(index, cellStates);
