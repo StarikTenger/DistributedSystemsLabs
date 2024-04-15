@@ -268,14 +268,6 @@ public class Board {
         }
     }
 
-	public void handleNeighborCalc(int index) {
-		for (int i = 0; i < 8; i++) { // TODO: do this more efficiently
-			if (neighbors[i] != null && neighbors[i] == index) {
-				neighborsCalculated[i] = true;
-			}
-		}
-    }
-
 	static public Vec2i getVectorForDirection(Directions direction) {
         switch (direction) {
             case UL: return new Vec2i(-1, -1);   // Up Left
@@ -290,8 +282,7 @@ public class Board {
         }
     }
 
-
-    private void handleNeighborTable(int index, CellState[][] neighborCells) {
+	private int neighborDir(int index) {
 		int neighbor_dir = 0;
 		for (int i = 0; i < 8; i++) { // TODO: do this more efficiently
 			if (neighbors[i] != null && neighbors[i] == index) {
@@ -299,6 +290,28 @@ public class Board {
 				break;
 			}
 		}
+		return neighbor_dir;
+	}
+
+	public void handleNeighborCalc(int index) {
+		log("Received calculated callback from direction " 
+			+ String.valueOf(neighborDir(index)) + ", neighbor "
+			+ String.valueOf(index));
+
+		for (int i = 0; i < 8; i++) { // TODO: do this more efficiently
+			if (neighbors[i] != null && neighbors[i] == index) {
+				neighborsCalculated[i] = true;
+			}
+		}
+    }
+
+    private void handleNeighborTable(int index, CellState[][] neighborCells) {
+		int neighbor_dir = neighborDir(index);
+
+		log("Received updated callback from direction " 
+			+ String.valueOf(neighbor_dir) + ", neighbor "
+			+ String.valueOf(index));
+
 		// Coordinates of topleft corner on united board
 		Vec2i delta = getVectorForDirection(Directions.values()[neighbor_dir]).add(new Vec2i(1,1)).mult(BOARD_SIZE);
 		System.out.println(delta);

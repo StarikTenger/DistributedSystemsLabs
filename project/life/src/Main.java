@@ -56,11 +56,16 @@ public class Main {
 		Board board = new Board(id, nbrs);
 
 		System.out.println("Board created. Press enter to connect");
-		board.connectToNeighbors();
-
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		br.readLine();
 
+		board.connectToNeighbors();
+
+		System.out.println("Board connected. Press enter to start");
+		br = new BufferedReader(new InputStreamReader(System.in));
+		br.readLine();
+
+		
 		board.start();
     }
 }
