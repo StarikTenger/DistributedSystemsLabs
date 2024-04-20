@@ -104,6 +104,8 @@ public class Board {
                 declareQueue(QUEUE_NAME_CALCULATED, EXCHANGE_NAME_CALCULATED, neighbors[i], deliverCalculatedCallback);
 
                 DeliverCallback deliverUpdatedCallback = (consumerTag, delivery) -> {
+					System.out.println("ZHOPA");
+
                     String message = new String(delivery.getBody(), "UTF-8");
 
                     JSONReader reader = new JSONReader();
@@ -160,7 +162,7 @@ public class Board {
         channel.basicPublish(exchangeUpdatedName, "", null, message.getBytes());
     }
 
-	public void start() throws IOException {
+	public void start() throws IOException, InterruptedException {
 		log("Starting");
 		int cycleCounter = 0;
 
@@ -177,7 +179,9 @@ public class Board {
 			log("Waiting for neighbors update");
 
 			// Wait for states of neighbors to be updated
-			while(!allNeighborsUpdated()) {} // TODO: get rid of busy waiting
+			while(!allNeighborsUpdated()) {
+				Thread.sleep(1000);
+			} // TODO: get rid of busy waiting
 
 			print();
 
@@ -198,7 +202,9 @@ public class Board {
 			log("Waiting for neighbors calculated...");
 
 			// Wait for all neighbors to be calculated
-			while(!allNeighborsCalculated()) {} // TODO: get rid of busy waiting
+			while(!allNeighborsCalculated()) {
+				Thread.sleep(1000);
+			} // TODO: get rid of busy waiting
 
 			// Flush updated neighbors
 			Arrays.fill(neighborsCalculated, false);
@@ -298,11 +304,7 @@ public class Board {
 			+ String.valueOf(neighborDir(index)) + ", neighbor "
 			+ String.valueOf(index));
 
-		for (int i = 0; i < 8; i++) { // TODO: do this more efficiently
-			if (neighbors[i] != null && neighbors[i] == index) {
-				neighborsCalculated[i] = true;
-			}
-		}
+		neighborsCalculated[neighborDir(index)] = true;
     }
 
     private void handleNeighborTable(int index, CellState[][] neighborCells) {
@@ -322,11 +324,7 @@ public class Board {
 			}	
 		}
 
-		for (int i = 0; i < 8; i++) { // TODO: do this more efficiently
-			if (neighbors[i] != null && neighbors[i] == index) {
-				neighborsUpdated[i] = true;
-			}
-		}
+		neighborsUpdated[neighborDir(index)] = true;
     }
 
 

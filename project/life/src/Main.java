@@ -22,7 +22,7 @@ public class Main {
 	}
 
 	// Parameters
-    public static void main(String[] args) throws IOException, TimeoutException {
+    public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
 
 
 		if (args.length != 3) {
