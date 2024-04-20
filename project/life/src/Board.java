@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Condition;
 
 public class Board {
     enum Directions {
@@ -34,6 +36,10 @@ public class Board {
 	private Integer[] neighbors;
 	private Boolean[] neighborsCalculated;
 	private Boolean[] neighborsUpdated;
+
+	private ReentrantLock lockObj = new ReentrantLock();
+	private Condition condAllCalculated = lockObj.newCondition();
+	private Condition condAllUpdated = lockObj.newCondition();
         
     public Board(int _id, Integer[] _neighbors) throws IOException, TimeoutException {
         cells = new CellState[BOARD_SIZE * 3][BOARD_SIZE * 3];
@@ -97,13 +103,18 @@ public class Board {
 				log("Connecting to neighbor " + String.valueOf(neighbors[i]));
 				
                 DeliverCallback deliverCalculatedCallback = (consumerTag, delivery) -> {
+					lockObj.lock();
                     String message = new String(delivery.getBody(), "UTF-8");
                     handleNeighborCalc(Integer.valueOf(message));
+					condAllCalculated.signalAll();
+					lockObj.unlock();
                 };
 
                 declareQueue(QUEUE_NAME_CALCULATED, EXCHANGE_NAME_CALCULATED, neighbors[i], deliverCalculatedCallback);
 
                 DeliverCallback deliverUpdatedCallback = (consumerTag, delivery) -> {
+					lockObj.lock();
+
 					System.out.println("ZHOPA");
 
                     String message = new String(delivery.getBody(), "UTF-8");
@@ -123,6 +134,9 @@ public class Board {
                         }
                     }
                     handleNeighborTable(index, cellStates);
+
+					condAllUpdated.signalAll();
+					lockObj.unlock();
                 };
                 declareQueue(QUEUE_NAME_UPDATED, EXCHANGE_NAME_UPDATED, neighbors[i], deliverUpdatedCallback);
 
@@ -179,8 +193,9 @@ public class Board {
 			log("Waiting for neighbors update");
 
 			// Wait for states of neighbors to be updated
+			lockObj.lock();
 			while(!allNeighborsUpdated()) {
-				Thread.sleep(1000);
+				condAllUpdated.await(); 
 			} // TODO: get rid of busy waiting
 
 			print();
@@ -202,8 +217,9 @@ public class Board {
 			log("Waiting for neighbors calculated...");
 
 			// Wait for all neighbors to be calculated
+			lockObj.lock();
 			while(!allNeighborsCalculated()) {
-				Thread.sleep(1000);
+				condAllCalculated.await(); 
 			} // TODO: get rid of busy waiting
 
 			// Flush updated neighbors
