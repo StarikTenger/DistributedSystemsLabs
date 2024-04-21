@@ -1,2 +1,4 @@
 /temp
 *.class
+project/jar/*.jar
+run.sh
