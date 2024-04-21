@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.util.concurrent.TimeoutException;
+import java.io.FileReader;
 
 public class Main {
 	public static int id;
@@ -26,12 +27,35 @@ public class Main {
 		return c == 'q';
 	}
 
+	public static Board loadBoard(String filename, int id, Integer[] nbrs) throws IOException, TimeoutException, InterruptedException {	
+        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+            // Read the size of the matrix
+            int size = Integer.parseInt(br.readLine());
+			Board board = new Board(size, id, nbrs);
+
+            // Read and fill the matrix
+            for (int i = 0; i < size; i++) {
+                String[] row = br.readLine().split(" ");
+                for (int j = 0; j < size; j++) {
+                    int val = Integer.parseInt(row[j]);
+                    board.setCell(j, i, new CellState(val == 1));
+                }
+            }
+			return board;
+        } catch (IOException e) {
+			System.out.println("failed to open file " + filename);
+			System.out.println("Terminating...");
+			System.exit(0);
+			return null;
+        }
+    }
+
 	// Parameters
     public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
 
 
-		if (args.length != 3) {
-			System.out.println("Invalid number of arguments. \nUsage ./program n m id");
+		if (args.length != 4) {
+			System.out.println("Invalid number of arguments. \nUsage ./program n m id board_file");
 			return;
 		}
 
@@ -39,6 +63,7 @@ public class Main {
 		n = Integer.valueOf(args[0]);
 		m = Integer.valueOf(args[1]);
 		id = Integer.valueOf(args[2]);
+
 
 		if (n <= 0 || m <= 0 || id <= 0 || id > n * m) {
 			System.out.println("Invalid arguments:");
@@ -58,7 +83,7 @@ public class Main {
 			check_neighbor(Board.Directions.D), 
 			check_neighbor(Board.Directions.DR)
 		};
-		Board board = new Board(10, id, nbrs);
+		Board board = loadBoard(args[3], id, nbrs);
 
 		System.out.println("Board created. Press enter to connect");
 		if (waitInput()) {

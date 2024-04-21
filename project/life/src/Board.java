@@ -180,7 +180,7 @@ public class Board {
     }
 
 	public void setCell(int x, int y, CellState val) {
-		cells[x][y] = val;
+		cells[BOARD_SIZE + x][BOARD_SIZE + y] = val;
 	}
 
 	private void log(String message) {
