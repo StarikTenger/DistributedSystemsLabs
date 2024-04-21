@@ -1,0 +1,43 @@
+==================================================
+                     RabbitMQ
+==================================================
+
+# run RabbitMQ node in the foreground
+CONF_ENV_FILE="/opt/homebrew/etc/rabbitmq/rabbitmq-env.conf" /opt/homebrew/opt/rabbitmq/sbin/rabbitmq-server
+
+# starts a local RabbitMQ node
+brew services start rabbitmq
+
+# highly recommended: enable all feature flags on the running node
+/opt/homebrew/sbin/rabbitmqctl enable_feature_flag all
+
+# stops the locally running RabbitMQ node
+brew services stop rabbitmq
+
+# build and run for god damn windows
+javac --release 8 -d build/ -cp "../../../jar/*" *.java
+java -classpath "../../jar/*;." Pingponger
+
+==================================================
+                     CLASSPATH
+==================================================
+
+# To use jars in the project, we should define it in CLASSPATH:
+https://docs.oracle.com/javase/1.5.0/docs/tooldocs/windows/classpath.html
+
+==================================================
+                     REMINDERS
+==================================================
+
+# Change the name of the queue to not confuse with other queues in the local network
+
+==================================================
+                   HOW TO RUN
+==================================================
+
+# Now we have 2 boards: left and right numerated as 1 and 2
+# To run the configuration, we have to run Main in two terminals
+# We pass 1 or 2 ass command-line argument
+
+java -classpath "../jar/*;./build/" Main 1 # in one terminal
+java -classpath "../jar/*;./build/" Main 2 # in other terminal
