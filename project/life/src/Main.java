@@ -21,6 +21,11 @@ public class Main {
 		return pos.y * n + pos.x + 1;
 	}
 
+	public static Boolean waitInput() throws IOException {
+		char c = (char) System.in.read();
+		return c == 'q';
+	}
+
 	// Parameters
     public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
 
@@ -53,19 +58,37 @@ public class Main {
 			check_neighbor(Board.Directions.D), 
 			check_neighbor(Board.Directions.DR)
 		};
-		Board board = new Board(id, nbrs);
+		Board board = new Board(10, id, nbrs);
 
 		System.out.println("Board created. Press enter to connect");
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		br.readLine();
+		if (waitInput()) {
+			System.out.println("Terminating...");
+			System.exit(0);
+		}
 
-		board.connectToNeighbors();
+		if (!board.connectToNeighbors()) {
+			System.out.println("Terminating due to failure...");
+			System.exit(0);
+			return;
+		}
 
 		System.out.println("Board connected. Press enter to start");
-		br = new BufferedReader(new InputStreamReader(System.in));
-		br.readLine();
-
+		if (waitInput()) {
+			System.out.println("Terminating...");
+			System.exit(0);
+		}
 		
-		board.start();
+		int cycles = 10;
+
+		while (true) {
+			board.start(cycles);
+			System.out.println("Press enter to run " + String.valueOf(cycles) + " more cycles, press q to quit");
+			if (waitInput()) {
+				break;
+			}
+		}
+
+		System.out.println("Terminating...");
+		System.exit(0);
     }
 }

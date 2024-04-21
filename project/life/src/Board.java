@@ -15,33 +15,45 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.Condition;
 
 public class Board {
+	// Required for addressing the neighbors
     enum Directions {
         UL, U, UR,
         L,     R,
         DL, D, DR
     }
+
+	// Exchange name templates
     private static final String EXCHANGE_NAME_CALCULATED = "e_calculated_";
     private static final String EXCHANGE_NAME_UPDATED = "e_updated_";
     private static final String QUEUE_NAME_CALCULATED = "q_calculated_";
     private static final String QUEUE_NAME_UPDATED = "q_updated_";
-    static final int BOARD_SIZE = 5;
-    static final int MARGIN_SIZE = 1; // margin of processing neighbors
+
+	// Size of the single square board
+    private static int BOARD_SIZE = 5;
+	// How many neigbors each cell takes into account
+    static final int MARGIN_SIZE = 1;
     private int id;
+	
+
     private String exchangeCalculatedName;
     private String exchangeUpdatedName;
     private static Channel channel;
     private CellState[][] cells;
     private CellState[][] nextCells;
 	private Boolean running = true;
+	private int cycleCounter = 0;
+
 	private Integer[] neighbors;
 	private Boolean[] neighborsCalculated;
 	private Boolean[] neighborsUpdated;
 
+	// Variables required for thread synchronization
 	private ReentrantLock lockObj = new ReentrantLock();
 	private Condition condAllCalculated = lockObj.newCondition();
 	private Condition condAllUpdated = lockObj.newCondition();
         
-    public Board(int _id, Integer[] _neighbors) throws IOException, TimeoutException {
+    public Board(int _BOARD_SIZE, int _id, Integer[] _neighbors) throws IOException, TimeoutException {
+		BOARD_SIZE = _BOARD_SIZE;
         cells = new CellState[BOARD_SIZE * 3][BOARD_SIZE * 3];
         nextCells = new CellState[BOARD_SIZE][BOARD_SIZE];
 
@@ -89,14 +101,16 @@ public class Board {
         Connection connection = factory.newConnection();
         channel = connection.createChannel();
 
+
         channel.exchangeDeclare(exchangeCalculatedName, "fanout");
         channel.exchangeDeclare(exchangeUpdatedName, "fanout");
 
     }
 
-    public void connectToNeighbors() throws IOException {
+    public Boolean connectToNeighbors() throws IOException {
 		log("Connecting to neighbors");
 		int connectionCounter = 0;
+		int failCounter = 0;
 
         for (int i = 0; i < neighbors.length; i++) {
             if (neighbors[i] != null) {
@@ -110,12 +124,17 @@ public class Board {
 					lockObj.unlock();
                 };
 
-                declareQueue(QUEUE_NAME_CALCULATED, EXCHANGE_NAME_CALCULATED, neighbors[i], deliverCalculatedCallback);
+				try {
+					declareQueue(QUEUE_NAME_CALCULATED, EXCHANGE_NAME_CALCULATED, neighbors[i], deliverCalculatedCallback);
+				} catch (Exception e) {
+					log("Unable to connect to neighbor " + String.valueOf(neighbors[i]) + 
+						". Make sure that you have initialized all boards");
+					failCounter++;
+					continue;
+				}
 
                 DeliverCallback deliverUpdatedCallback = (consumerTag, delivery) -> {
 					lockObj.lock();
-
-					System.out.println("ZHOPA");
 
                     String message = new String(delivery.getBody(), "UTF-8");
 
@@ -138,24 +157,42 @@ public class Board {
 					condAllUpdated.signalAll();
 					lockObj.unlock();
                 };
-                declareQueue(QUEUE_NAME_UPDATED, EXCHANGE_NAME_UPDATED, neighbors[i], deliverUpdatedCallback);
+
+				try {
+					declareQueue(QUEUE_NAME_UPDATED, EXCHANGE_NAME_UPDATED, neighbors[i], deliverUpdatedCallback);
+				} catch (Exception e) {
+					log("Unable to connect to neighbor " + String.valueOf(neighbors[i]) + 
+						". Make sure that you have initialized all boards");
+					failCounter++;
+					continue;
+				}
 
 				log("Connected to " + String.valueOf(neighbors[i]));
 				connectionCounter++;
             }
         }
-		log("Connected to " + String.valueOf(connectionCounter) + " neigbors");
+		log("Connected to " + String.valueOf(connectionCounter) + " / " + 
+			String.valueOf(connectionCounter + failCounter) + " neigbors");
+		if (failCounter != 0) {
+			return false;
+		}
+		return true;
     }
+
+	public void setCell(int x, int y, CellState val) {
+		cells[x][y] = val;
+	}
 
 	private void log(String message) {
 		System.out.println("[" + String.valueOf(id) + "]: " + message);
 	}
 
-    private void declareQueue(String qName, String eName, int idNeighbor, DeliverCallback deliverCallback) throws IOException {
-        String queueName = qName + id + idNeighbor;
-        channel.queueDeclare(queueName, false, false, false, null);
-        channel.queueBind(queueName, eName + idNeighbor, "");
-        channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
+    private void declareQueue(String qName, String eName, int idNeighbor, DeliverCallback deliverCallback) throws IOException {		
+		String queueName = qName + id + idNeighbor;
+		channel.queueDeclare(queueName, false, false, false, null);
+		channel.queueBind(queueName, eName + idNeighbor, "");
+		channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
+		
     }
 
     private void publishCalculated() throws IOException {
@@ -176,12 +213,13 @@ public class Board {
         channel.basicPublish(exchangeUpdatedName, "", null, message.getBytes());
     }
 
-	public void start() throws IOException, InterruptedException {
+	public void start(int cycles) throws IOException, InterruptedException {
 		log("Starting");
-		int cycleCounter = 0;
+		
+		int localCycleCounter = 0;
 
-
-		while (cycleCounter < 10) {
+		while (localCycleCounter < cycles) {
+			localCycleCounter++;
 			cycleCounter++;
 			log("Cycle " + String.valueOf(cycleCounter));
 
@@ -196,7 +234,7 @@ public class Board {
 			lockObj.lock();
 			while(!allNeighborsUpdated()) {
 				condAllUpdated.await(); 
-			} // TODO: get rid of busy waiting
+			}
 
 			print();
 
@@ -220,7 +258,7 @@ public class Board {
 			lockObj.lock();
 			while(!allNeighborsCalculated()) {
 				condAllCalculated.await(); 
-			} // TODO: get rid of busy waiting
+			}
 
 			// Flush updated neighbors
 			Arrays.fill(neighborsCalculated, false);
@@ -234,14 +272,6 @@ public class Board {
 	}
 
 	public void print() {
-		// for (int i = 0; i < BOARD_SIZE; i++) {
-		// 	for (int j = 0; j < BOARD_SIZE; j++) {
-		// 		System.out.print(
-		// 			cells[i + BOARD_SIZE][j + BOARD_SIZE].isAlive ? "X" : ".");
-		// 	}
-		// 	System.out.println();
-		// }
-
 		for (int j = 0; j < BOARD_SIZE * 3; j++) {
 			for (int i = 0; i < BOARD_SIZE * 3; i++) {
 				if  ((i < BOARD_SIZE && neighbors[Directions.L.ordinal()] == null) ||
@@ -332,7 +362,6 @@ public class Board {
 
 		// Coordinates of topleft corner on united board
 		Vec2i delta = getVectorForDirection(Directions.values()[neighbor_dir]).add(new Vec2i(1,1)).mult(BOARD_SIZE);
-		System.out.println(delta);
 
 		for (int i = 0; i < BOARD_SIZE; i++) {
 			for (int j = 0; j < BOARD_SIZE; j++) {
